@@ -1,8 +1,11 @@
+import 'package:btl_ltdd/models/user_model.dart';
 import 'package:btl_ltdd/providers/user_provider.dart';
 import 'package:btl_ltdd/view/auth/forgot_password_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // Import thư viện lưu trữ
+import '../admin/admin_home_screen.dart';
+import '../home/blogger_home_screen.dart';
 // import '../providers/user_provider.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -37,8 +40,12 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   // HÀM 2: Xử lý đăng nhập & Lưu mật khẩu
+ // HÀM 2: Xử lý đăng nhập & Lưu mật khẩu & Chuyển trang
   void _handleLogin() async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
+    
+    // Ẩn bàn phím trước khi xử lý
+    FocusManager.instance.primaryFocus?.unfocus();
 
     if (_usernameController.text.isEmpty || _passController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -53,32 +60,55 @@ class _LoginScreenState extends State<LoginScreen> {
       _passController.text.trim(),
     );
 
-    if (mounted) {
-      if (result == "Success") {
-        // --- XỬ LÝ LƯU MẬT KHẨU ---
-        final prefs = await SharedPreferences.getInstance();
-        if (_rememberMe) {
-          // Nếu tích chọn -> Lưu lại
-          await prefs.setBool('remember_me', true);
-          await prefs.setString('saved_username', _usernameController.text.trim());
-          await prefs.setString('saved_password', _passController.text.trim());
-        } else {
-          // Nếu bỏ tích -> Xóa đi
-          await prefs.remove('remember_me');
-          await prefs.remove('saved_username');
-          await prefs.remove('saved_password');
-        }
-        // ---------------------------
+    if (!mounted) return; // Kiểm tra xem màn hình còn tồn tại không
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("✅ Đăng nhập thành công!")),
-        );
-        // Navigator.pushReplacement... (Chuyển trang Home)
+    if (result == "Success") {
+      // 1. XỬ LÝ LƯU MẬT KHẨU (Giữ nguyên logic cũ của bạn)
+      final prefs = await SharedPreferences.getInstance();
+      if (_rememberMe) {
+        await prefs.setBool('remember_me', true);
+        await prefs.setString('saved_username', _usernameController.text.trim());
+        await prefs.setString('saved_password', _passController.text.trim());
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("❌ $result"), backgroundColor: Colors.red),
+        await prefs.remove('remember_me');
+        await prefs.remove('saved_username');
+        await prefs.remove('saved_password');
+      }
+
+      // 2. HIỂN THỊ THÔNG BÁO
+      
+     
+
+      // 3. KIỂM TRA ROLE VÀ CHUYỂN HƯỚNG
+      // Lấy thông tin user hiện tại từ Provider
+      final currentUser = userProvider.user;
+      
+      if (currentUser != null) {
+        // Đợi 1 chút cho mượt
+        await Future.delayed(const Duration(milliseconds: 500));
+        
+        if (!mounted) return;
+
+        Widget nextScreen;
+        // Kiểm tra Role (Enum UserRole đã định nghĩa trong UserModel)
+        if (currentUser.role == UserRole.admin) {
+          nextScreen = const AdminHomeScreen();
+        } else {
+          nextScreen = const BloggerHomeScreen();
+        }
+
+        // Chuyển trang và XÓA màn hình Login khỏi lịch sử (để ấn Back không về lại Login)
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => nextScreen),
+          (route) => false,
         );
       }
+    } else {
+      // Đăng nhập thất bại
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Đăng nhập thất bại! Vui lòng kiểm tra lại thông tin."), backgroundColor: Colors.red),
+      );
     }
   }
 
