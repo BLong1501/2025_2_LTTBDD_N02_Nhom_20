@@ -11,6 +11,8 @@ class FoodModel {
   final bool isShared;            // Trạng thái chia sẻ (Public/Private)
   final List<String> likedBy;     // Danh sách ID người thả tim
   final DateTime createdAt;       // Thời gian tạo
+  final List<String> tags;      // Thẻ gắn kèm món ăn
+  final String category;        // Danh mục món ăn
 
   FoodModel({
     required this.id,
@@ -23,6 +25,8 @@ class FoodModel {
     this.isShared = false,
     this.likedBy = const [],
     required this.createdAt,
+    this.tags = const [],
+    this.category = '',
   });
 
   // 1. Chuyển từ Firestore Map sang Object
@@ -45,6 +49,10 @@ class FoodModel {
       
       // Chuyển Timestamp của Firebase thành DateTime
       createdAt: (data['createdAt'] as Timestamp).toDate(),
+
+      // Ép kiểu danh sách thẻ
+      tags: List<String>.from(data['tags'] ?? []),
+      category: data['category'] ?? '',
     );
   }
 
@@ -60,6 +68,8 @@ class FoodModel {
       'isShared': isShared,
       'likedBy': likedBy,
       'createdAt': Timestamp.fromDate(createdAt), // Chuyển ngược lại thành Timestamp
+      'tags': tags,
+      'category': category,
     };
   }
 }

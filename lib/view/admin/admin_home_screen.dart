@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/user_provider.dart';
 import '../auth/login_screen.dart';
+import 'manage_users_screen.dart';
+
 
 class AdminHomeScreen extends StatelessWidget {
   const AdminHomeScreen({super.key});
@@ -38,6 +40,21 @@ class AdminHomeScreen extends StatelessWidget {
                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
             const Text("Quản lý người dùng và bài viết tại đây."),
+
+            const SizedBox(height: 30),
+
+            ElevatedButton.icon(
+              icon: const Icon(Icons.people),
+              label: const Text("Quản lý người dùng"),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const ManageUsersScreen(),
+                  ),
+                );
+              },
+            ),
           ],
         ),
       ),

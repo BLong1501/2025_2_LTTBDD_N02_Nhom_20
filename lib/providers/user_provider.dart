@@ -12,6 +12,13 @@ class UserProvider extends ChangeNotifier {
   UserModel? get user => _user;
   bool get isLoading => _isLoading;
 
+  bool get isLoggedIn => _user != null;
+
+  bool get isAdmin => _user?.role == UserRole.admin;
+
+  bool get isBlocked => _user?.isLocked ?? false;
+
+
   // 1. Hàm Đăng ký
   Future<String> register(String email, String password, String name, String username) async {
     _setLoading(true);

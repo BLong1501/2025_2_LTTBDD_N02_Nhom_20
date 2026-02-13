@@ -17,6 +17,7 @@ class UserModel {
   final DateTime createdAt;
   final String username;
 
+
   UserModel({
     required this.id,
     required this.name,
@@ -72,5 +73,37 @@ class UserModel {
       'createdAt': Timestamp.fromDate(createdAt),
       'username': username,
     };
+  }
+
+  UserModel copyWith({
+    String? id,
+    String? name,
+    String? email,
+    String? phoneNumber,
+    String? address,
+    String? avatarUrl,
+    String? bio,
+    UserRole? role,
+    bool? isLocked,
+    List<String>? favorites,
+    List<String>? followers,
+    DateTime? createdAt,
+    String? username,
+  }) {
+    return UserModel(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      email: email ?? this.email,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+      address: address ?? this.address,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
+      bio: bio ?? this.bio,
+      role: role ?? this.role,
+      isLocked: isLocked ?? this.isLocked,
+      favorites: favorites ?? this.favorites,
+      followers: followers ?? this.followers,
+      createdAt: createdAt ?? this.createdAt,
+      username: username ?? this.username,
+    );
   }
 }
