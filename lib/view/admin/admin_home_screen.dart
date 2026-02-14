@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../providers/user_provider.dart';
 import '../auth/login_screen.dart';
 import 'manage_users_screen.dart';
+import 'manage_foods_screen.dart';
 
 
 class AdminHomeScreen extends StatelessWidget {
@@ -55,6 +56,20 @@ class AdminHomeScreen extends StatelessWidget {
                 );
               },
             ),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.restaurant),
+              label: const Text("Quản lý công thức"),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) =>
+                        const ManageFoodsScreen(),
+                  ),
+                );
+              },
+            ),
+
           ],
         ),
       ),

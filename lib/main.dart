@@ -5,6 +5,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 import 'providers/user_provider.dart'; 
+import 'providers/admin_food_provider.dart';
 // import 'views/auth_screen.dart'; // Đảm bảo import đúng file View bạn vừa tạo
 
 void main() async {
@@ -27,6 +28,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => UserProvider()),
+        ChangeNotifierProvider(create: (_) => AdminFoodProvider()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
