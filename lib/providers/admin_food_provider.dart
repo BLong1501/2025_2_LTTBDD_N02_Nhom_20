@@ -78,4 +78,29 @@ class AdminFoodProvider extends ChangeNotifier {
       debugPrint("Toggle approval error: $e");
     }
   }
+  // Thêm công thức mới
+  Future<void> addFood(FoodModel food) async {
+    final docRef = await _firestore
+        .collection('foods')
+        .add(food.toMap());
+
+    final newFood = food.copyWith(id: docRef.id);
+
+    _foods.add(newFood);
+    notifyListeners();
+  }
+  // Cập nhật công thức
+  Future<void> updateFood(FoodModel food) async {
+    await _firestore
+        .collection('foods')
+        .doc(food.id)
+        .update(food.toMap());
+
+    final index = _foods.indexWhere((f) => f.id == food.id);
+
+    if (index != -1) {
+      _foods[index] = food;
+      notifyListeners();
+    }
+  }
 }

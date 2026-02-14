@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/admin_food_provider.dart';
 import '../../models/food_model.dart';
+import 'add_edit_food_screen.dart';
+
 
 class ManageFoodsScreen extends StatefulWidget {
   const ManageFoodsScreen({super.key});
@@ -66,6 +68,14 @@ class _ManageFoodsScreenState
                           provider
                               .toggleApproval(food);
                         }
+                        if (value == "edit") {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => AddEditFoodScreen(food: food),
+                            ),
+                          );
+                        }
                       },
                       itemBuilder: (_) => [
                         PopupMenuItem(
@@ -77,6 +87,10 @@ class _ManageFoodsScreenState
                           ),
                         ),
                         const PopupMenuItem(
+                          value: "edit",
+                          child: Text("Sửa"),
+                        ),
+                        const PopupMenuItem(
                           value: "delete",
                           child: Text("Xóa bài"),
                         ),
@@ -85,6 +99,17 @@ class _ManageFoodsScreenState
                   ),
                 );
               },
+            ),
+      floatingActionButton: FloatingActionButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const AddEditFoodScreen(),
+                  ),
+                );
+              },
+              child: const Icon(Icons.add),
             ),
     );
   }

@@ -4,7 +4,7 @@ import '../../providers/user_provider.dart';
 import '../auth/login_screen.dart';
 import 'manage_users_screen.dart';
 import 'manage_foods_screen.dart';
-
+import 'admin_stats_screen.dart';
 
 class AdminHomeScreen extends StatelessWidget {
   const AdminHomeScreen({super.key});
@@ -69,7 +69,19 @@ class AdminHomeScreen extends StatelessWidget {
                 );
               },
             ),
-
+            ElevatedButton.icon(
+              icon: const Icon(Icons.bar_chart),
+              label: const Text("Xem thống kê"),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) =>
+                        const AdminStatsScreen(),
+                  ),
+                );
+              },
+            ),
           ],
         ),
       ),
