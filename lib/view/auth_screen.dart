@@ -38,7 +38,7 @@ class _TestAuthScreenState extends State<TestAuthScreen> {
                 color: Colors.green[100],
                 child: Column(
                   children: [
-                    const Text("✅ ĐANG ĐĂNG NHẬP", style: TextStyle(fontWeight: FontWeight.bold)),
+                    const Text(" ĐANG ĐĂNG NHẬP", style: TextStyle(fontWeight: FontWeight.bold)),
                     Text("Tên: ${userProvider.user!.name}"),
                     Text("User: ${userProvider.user!.username}"),
                     Text("Email: ${userProvider.user!.email}"),
