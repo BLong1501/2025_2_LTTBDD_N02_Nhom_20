@@ -6,9 +6,43 @@ class FoodService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  // 1. Thêm món ăn vào một Plan cụ thể
+  // =================================================================
+  // PHẦN 1: QUẢN LÝ MÓN ĂN CHUNG (Lưu vào collection 'foods')
+  // Dùng cho màn hình danh sách món ăn chính (MealPlansScreen cũ)
+  // =================================================================
+
+  // 1.1. Lấy tất cả món ăn của User
+  Stream<List<FoodModel>> getAllUserFoods() {
+    final user = _auth.currentUser;
+    if (user == null) return const Stream.empty();
+
+    return _firestore
+        .collection('foods') // Lưu ở collection gốc
+        .where('authorId', isEqualTo: user.uid)
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => FoodModel.fromMap(doc.data(), doc.id))
+            .toList());
+  }
+
+  // 1.2. Thêm món ăn vào danh sách chung
+  Future<void> addFood(FoodModel food) async {
+    await _firestore.collection('foods').add(food.toMap());
+  }
+
+  // 1.3. Xóa món ăn khỏi danh sách chung
+  Future<void> deleteFood(String foodId) async {
+    await _firestore.collection('foods').doc(foodId).delete();
+  }
+
+  // =================================================================
+  // PHẦN 2: QUẢN LÝ MÓN ĂN TRONG KẾ HOẠCH (Code cũ của bạn)
+  // Dùng cho MealPlanDetailScreen nếu bạn vẫn muốn giữ logic cũ
+  // =================================================================
+
+  // 2.1. Thêm món ăn vào Plan cụ thể (Sub-collection)
   Future<void> addFoodToPlan(String planId, FoodModel food) async {
-    // Lưu vào đường dẫn: meal_plans/{planId}/foods/{foodId}
     await _firestore
         .collection('meal_plans')
         .doc(planId)
@@ -16,7 +50,7 @@ class FoodService {
         .add(food.toMap());
   }
 
-  // 2. Lấy danh sách món ăn của Plan đó
+  // 2.2. Lấy món ăn của một Plan cụ thể
   Stream<List<FoodModel>> getFoodsInPlan(String planId) {
     return _firestore
         .collection('meal_plans')
@@ -29,8 +63,8 @@ class FoodService {
             .toList());
   }
 
-  // 3. Xóa món ăn khỏi Plan
-  Future<void> deleteFood(String planId, String foodId) async {
+  // 2.3. Xóa món ăn khỏi Plan
+  Future<void> deleteFoodFromPlan(String planId, String foodId) async {
     await _firestore
         .collection('meal_plans')
         .doc(planId)

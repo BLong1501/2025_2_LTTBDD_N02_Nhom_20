@@ -1,9 +1,9 @@
 import 'package:btl_ltdd/view/food/meal_plan_detail.screen.dart';
 import 'package:flutter/material.dart';
-import '../../models/meal_plan_model.dart';
-import '../../services/meal_plan_service.dart';
-import '../food/add_food_screen.dart'; // Import màn hình thêm món
-// import '../food/meal_plan_detail_screen.dart'; // Import màn hình chi tiết
+import '../../models/food_model.dart';
+import '../../services/food_service.dart';
+import '../food/add_food_screen.dart';
+// import '../food/meal_detail_screen.dart'; // <--- QUAN TRỌNG: BỎ COMMENT DÒNG NÀY
 
 class MealPlansScreen extends StatefulWidget {
   const MealPlansScreen({super.key});
@@ -13,63 +13,70 @@ class MealPlansScreen extends StatefulWidget {
 }
 
 class _MealPlansScreenState extends State<MealPlansScreen> {
-  final MealPlanService _service = MealPlanService();
-
-  // --- SỬA HÀM NÀY: Chỉ chuyển trang, không tạo Plan ---
+  
+  // Chuyển sang trang thêm món
   void _goToAddFoodScreen() {
-    // Chuyển sang màn hình AddFoodScreen với planId là RỖNG
     Navigator.push(
       context,
       MaterialPageRoute(
-        // planId rỗng ('') báo hiệu cho AddFoodScreen biết là cần tạo Plan mới khi lưu
+        // planId rỗng ('') nghĩa là thêm vào danh sách chung, không thuộc Plan cụ thể nào
         builder: (_) => const AddFoodScreen(planId: ''), 
       ),
     );
   }
-  // -----------------------------------------------------
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
-      body: StreamBuilder<List<MealPlanModel>>(
-        stream: _service.getMyPlansStream(),
-        builder: (context, snapshot) {
-          final plans = snapshot.hasData ? snapshot.data! : [];
-          final planCount = plans.length;
+      body: Column(
+        children: [
+          _buildCustomHeader(),
 
-          return Column(
-            children: [
-              // 1. HEADER CAM & NÚT TẠO
-              _buildCustomHeader(planCount),
+          Expanded(
+            child: StreamBuilder<List<FoodModel>>(
+              // Gọi hàm lấy tất cả món ăn chung (cần đảm bảo FoodService có hàm này)
+              stream: FoodService().getAllUserFoods(), 
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                
+                final foods = snapshot.data ?? [];
 
-              // 2. DANH SÁCH
-              Expanded(
-                child: snapshot.connectionState == ConnectionState.waiting
-                    ? const Center(child: CircularProgressIndicator())
-                    : plans.isEmpty
-                        ? _buildEmptyState()
-                        : ListView.builder(
-                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                            itemCount: plans.length,
-                            itemBuilder: (context, index) {
-                              return _buildPlanCard(plans[index]);
-                            },
-                          ),
-              ),
-            ],
-          );
-        },
+                if (foods.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.fastfood, size: 50, color: Colors.grey[400]),
+                        const SizedBox(height: 10),
+                        const Text("Chưa có món ăn nào.", style: TextStyle(color: Colors.grey)),
+                      ],
+                    ),
+                  );
+                }
+
+                return ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  itemCount: foods.length,
+                  itemBuilder: (context, index) {
+                    final food = foods[index];
+                    return _buildFoodItem(food);
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  // Widget: Header màu cam và Nút tạo nổi
-  Widget _buildCustomHeader(int count) {
+  Widget _buildCustomHeader() {
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        // Nền cam gradient
         Container(
           padding: const EdgeInsets.only(top: 60, left: 20, right: 20, bottom: 50),
           width: double.infinity,
@@ -84,76 +91,40 @@ class _MealPlansScreenState extends State<MealPlansScreen> {
               bottomRight: Radius.circular(30),
             ),
           ),
-          child: Column(
+          child: const Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.soup_kitchen, color: Colors.white, size: 24),
-                  ),
-                  const SizedBox(width: 12),
-                  const Text(
-                    "Cooky",
-                    style: TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
+                  Icon(Icons.soup_kitchen, color: Colors.white, size: 28),
+                  SizedBox(width: 10),
+                  Text("Cooky", style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
                 ],
               ),
-              const SizedBox(height: 5),
-              const Padding(
-                padding: EdgeInsets.only(left: 50),
-                child: Text(
-                  "Kế hoạch bữa ăn",
-                  style: TextStyle(color: Colors.white70, fontSize: 14),
-                ),
-              ),
+              SizedBox(height: 5),
+              Text("Danh sách món ăn của tôi", style: TextStyle(color: Colors.white70, fontSize: 14)),
             ],
           ),
         ),
-
-        // Nút "Tạo kế hoạch mới" nằm đè lên
         Positioned(
           bottom: -25,
           left: 20,
           right: 20,
           child: InkWell(
-            onTap: _goToAddFoodScreen, // <--- GỌI HÀM MỚI Ở ĐÂY
+            onTap: _goToAddFoodScreen,
             child: Container(
               height: 55,
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(15),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 10,
-                    offset: const Offset(0, 5),
-                  ),
-                ],
-                border: Border.all(color: Colors.orange.shade100, width: 1),
+                boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 5))],
               ),
               child: const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(Icons.add, color: Colors.deepOrange),
                   SizedBox(width: 8),
-                  Text(
-                    "Tạo kế hoạch mới",
-                    style: TextStyle(
-                      color: Colors.deepOrange,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
+                  Text("Thêm món mới", style: TextStyle(color: Colors.deepOrange, fontWeight: FontWeight.bold)),
                 ],
               ),
             ),
@@ -163,130 +134,66 @@ class _MealPlansScreenState extends State<MealPlansScreen> {
     );
   }
 
-  // Widget: Thẻ hiển thị từng kế hoạch
-  Widget _buildPlanCard(MealPlanModel plan) {
+  Widget _buildFoodItem(FoodModel food) {
     return Container(
       margin: const EdgeInsets.only(bottom: 15),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-        border: Border.all(color: Colors.grey.shade100),
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.08), blurRadius: 10, offset: const Offset(0, 4))],
       ),
-      child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => MealPlanDetailScreen(plan: plan),
-            ),
-          );
-        },
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
-                      plan.name,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.more_horiz, color: Colors.grey),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    onPressed: () => _showDeleteDialog(plan),
-                  )
-                ],
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(15),
+          
+          // --- SỰ KIỆN CLICK: CHUYỂN SANG MÀN HÌNH CHI TIẾT ---
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => MealDetailScreen(food: food), // Truyền data món ăn sang
               ),
-              const SizedBox(height: 12),
-              Text(
-                plan.note.isNotEmpty ? plan.note : "Chưa có mô tả chi tiết...",
-                style: TextStyle(
-                  color: Colors.grey[600],
-                  fontSize: 14,
-                  height: 1.4,
+            );
+          },
+          // ----------------------------------------------------
+
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: food.imageUrl.isNotEmpty
+                      ? Image.network(
+                          food.imageUrl, 
+                          width: 80, 
+                          height: 80, 
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Container(
+                            width: 80, height: 80, color: Colors.orange[100],
+                            child: const Icon(Icons.broken_image, color: Colors.orange),
+                          ),
+                        )
+                      : Container(width: 80, height: 80, color: Colors.orange[100], child: const Icon(Icons.fastfood, color: Colors.orange)),
                 ),
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  const Icon(Icons.calendar_today_outlined, size: 14, color: Colors.grey),
-                  const SizedBox(width: 6),
-                  Text(
-                    _getRelativeTime(plan.createdAt),
-                    style: const TextStyle(color: Colors.grey, fontSize: 12),
+                const SizedBox(width: 15),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(food.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      const SizedBox(height: 5),
+                      Text("${food.ingredients.length} nguyên liệu", style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+                    ],
                   ),
-                ],
-              )
-            ],
+                ),
+                const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+              ],
+            ),
           ),
         ),
       ),
     );
-  }
-
-  // Widget: Trạng thái trống
-  Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const SizedBox(height: 40),
-          Icon(Icons.edit_calendar_rounded, size: 80, color: Colors.grey[300]),
-          const SizedBox(height: 15),
-          const Text("Bạn chưa có kế hoạch nào", style: TextStyle(color: Colors.grey)),
-        ],
-      ),
-    );
-  }
-
-  // Hộp thoại xóa
-  void _showDeleteDialog(MealPlanModel plan) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text("Xóa kế hoạch?"),
-        content: Text("Bạn có chắc muốn xóa '${plan.name}' không?"),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Hủy")),
-          TextButton(
-            onPressed: () {
-              _service.deletePlan(plan.id);
-              Navigator.pop(ctx);
-            },
-            child: const Text("Xóa", style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Hàm tính thời gian
-  String _getRelativeTime(DateTime date) {
-    final now = DateTime.now();
-    final difference = now.difference(date);
-    if (difference.inDays > 0) return "${difference.inDays} ngày trước";
-    if (difference.inHours > 0) return "${difference.inHours} giờ trước";
-    if (difference.inMinutes > 0) return "${difference.inMinutes} phút trước";
-    return "Vừa xong";
   }
 }
