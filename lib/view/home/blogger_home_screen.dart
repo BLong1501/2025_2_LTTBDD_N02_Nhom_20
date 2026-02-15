@@ -17,7 +17,7 @@ class _BloggerHomeScreenState extends State<BloggerHomeScreen> {
   final List<Widget> _pages = [
     const DiscoverView(),
     const Center(child: Text("Community", style: TextStyle(color: Colors.black))),
-    const MealPlansScreen(),
+    const MealPlansScreen(), // Default plan value
     const Center(child: Text("Profile", style: TextStyle(color: Colors.black))),
   ];
 
