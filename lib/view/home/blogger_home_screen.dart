@@ -1,3 +1,4 @@
+import 'package:btl_ltdd/view/community/community_screen.dart';
 import 'package:btl_ltdd/view/home/meal_plan_screen.dart';
 import 'package:btl_ltdd/view/widgets/blogger_navigator_screen.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +17,7 @@ class _BloggerHomeScreenState extends State<BloggerHomeScreen> {
 
   final List<Widget> _pages = [
     const DiscoverView(),
-    const Center(child: Text("Community", style: TextStyle(color: Colors.black))),
+    const CommunityScreen(),
     const MealPlansScreen(), // Default plan value
     const Center(child: Text("Profile", style: TextStyle(color: Colors.black))),
   ];

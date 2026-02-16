@@ -174,7 +174,12 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
         // SAI: await MealPlanService().createPlanWithFirstFood(newFood);
         
         // ĐÚNG: Lưu thẳng vào kho món ăn chung để màn hình chính hiển thị được
-        await FoodService().addFood(newFood); 
+       await FoodService().addFood(newFood); 
+
+      // 2. Nếu đang ở trong Plan, lưu THÊM một bản vào Plan đó
+      if (widget.planId.isNotEmpty) {
+        await FoodService().addFoodToPlan(widget.planId, newFood);
+      }
       } else {
         // Thêm vào Plan cũ (Giữ nguyên)
         await FoodService().addFoodToPlan(widget.planId, newFood);

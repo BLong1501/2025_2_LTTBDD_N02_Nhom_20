@@ -72,4 +72,32 @@ class FoodService {
         .doc(foodId)
         .delete();
   }
+  Stream<List<FoodModel>> getCommunityFoods() {
+    return _firestore
+        .collection('foods')
+        .where('isShared', isEqualTo: true) // Chỉ lấy bài chia sẻ công khai
+        .orderBy('createdAt', descending: true) // Bài mới nhất lên đầu
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => FoodModel.fromMap(doc.data(), doc.id))
+            .toList());
+  }
+  Future<void> toggleLike(String foodId, List<String> currentLikes) async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+
+    final String uid = user.uid;
+    List<String> newLikes = List.from(currentLikes);
+
+    if (newLikes.contains(uid)) {
+      newLikes.remove(uid); // Nếu đã like thì bỏ like
+    } else {
+      newLikes.add(uid); // Chưa like thì thêm vào
+    }
+
+    // Cập nhật lại mảng likedBy trên Firestore
+    await _firestore.collection('foods').doc(foodId).update({
+      'likedBy': newLikes,
+    });
+  }
 }
