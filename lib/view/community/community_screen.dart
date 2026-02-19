@@ -1,4 +1,5 @@
 import 'package:btl_ltdd/view/food/meal_plan_detail.screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // Cần import để lấy info user
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../models/food_model.dart';
@@ -18,7 +19,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // Nền trắng sạch sẽ
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text(
           "Cộng đồng Cooky",
@@ -28,27 +29,14 @@ class _CommunityScreenState extends State<CommunityScreen> {
         elevation: 0,
         centerTitle: false,
       ),
-     body: StreamBuilder<List<FoodModel>>(
+      body: StreamBuilder<List<FoodModel>>(
         stream: _service.getCommunityFoods(),
         builder: (context, snapshot) {
-          // 1. KIỂM TRA LỖI VÀ IN RA MÀN HÌNH
-          if (snapshot.hasError) {
-            print("Lỗi Stream: ${snapshot.error}"); // In ra console
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Text("Lỗi: ${snapshot.error}", style: const TextStyle(color: Colors.red)),
-              ),
-            );
-          }
-
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
           
           final foods = snapshot.data ?? [];
-          
-          // ... (Phần còn lại giữ nguyên)
 
           if (foods.isEmpty) {
             return const Center(
@@ -66,7 +54,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
           return ListView.separated(
             padding: const EdgeInsets.only(bottom: 20),
             itemCount: foods.length,
-            separatorBuilder: (ctx, index) => const Divider(height: 30, thickness: 8, color: Color(0xFFF5F5F5)), // Khoảng cách giữa các bài
+            separatorBuilder: (ctx, index) => const Divider(height: 30, thickness: 8, color: Color(0xFFF5F5F5)),
             itemBuilder: (context, index) {
               return _buildPostItem(foods[index]);
             },
@@ -76,46 +64,18 @@ class _CommunityScreenState extends State<CommunityScreen> {
     );
   }
 
-  // Widget hiển thị 1 bài đăng (Giống Facebook/Instagram)
   Widget _buildPostItem(FoodModel food) {
     final bool isLiked = food.likedBy.contains(_currentUserId);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 1. Header: Thông tin người đăng (Avatar + Tên)
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-          child: Row(
-            children: [
-              CircleAvatar(
-                backgroundColor: Colors.orange.shade100,
-                child: const Icon(Icons.person, color: Colors.deepOrange),
-              ),
-              const SizedBox(width: 10),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Đầu bếp Cooky", // Bạn có thể lưu tên user vào FoodModel để hiện tên thật
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                  ),
-                  Text(
-                    food.category.isNotEmpty ? food.category : "Món ngon",
-                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                  ),
-                ],
-              ),
-              const Spacer(),
-              const Icon(Icons.more_horiz, color: Colors.grey),
-            ],
-          ),
-        ),
+        // 1. HEADER: Thay vì code cứng, ta gọi Widget _AuthorInfo để load dữ liệu thật
+        _AuthorInfo(authorId: food.authorId, category: food.category),
 
-        // 2. Ảnh món ăn (To, tràn viền)
+        // 2. ẢNH MÓN ĂN
         InkWell(
           onTap: () {
-            // Ấn vào ảnh thì xem chi tiết công thức
             Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => MealDetailScreen(food: food)),
@@ -125,19 +85,18 @@ class _CommunityScreenState extends State<CommunityScreen> {
               ? Image.network(
                   food.imageUrl,
                   width: double.infinity,
-                  height: 300, // Chiều cao cố định hoặc để null cho tự động
+                  height: 300,
                   fit: BoxFit.cover,
                   errorBuilder: (_,__,___) => Container(height: 300, color: Colors.grey[200], child: const Icon(Icons.broken_image)),
                 )
               : Container(height: 200, color: Colors.orange[100], child: const Center(child: Icon(Icons.fastfood, size: 50, color: Colors.orange))),
         ),
 
-        // 3. Nút tương tác (Like, Comment, Save)
+        // 3. NÚT TƯƠNG TÁC
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
           child: Row(
             children: [
-              // Nút Like
               IconButton(
                 icon: Icon(
                   isLiked ? Icons.favorite : Icons.favorite_border,
@@ -148,16 +107,13 @@ class _CommunityScreenState extends State<CommunityScreen> {
                   _service.toggleLike(food.id, food.likedBy);
                 },
               ),
-              // Nút Comment (Demo)
               IconButton(
                 icon: const Icon(Icons.chat_bubble_outline, size: 26),
                 onPressed: () {
-                  // Mở chức năng bình luận (Phát triển sau)
                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Tính năng bình luận đang phát triển")));
                 },
               ),
               const Spacer(),
-              // Nút Xem chi tiết (Save recipe)
               InkWell(
                 onTap: () {
                    Navigator.push(
@@ -184,7 +140,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
           ),
         ),
 
-        // 4. Số lượt like và Caption
+        // 4. SỐ LIKE VÀ CAPTION
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 15),
           child: Column(
@@ -209,7 +165,6 @@ class _CommunityScreenState extends State<CommunityScreen> {
                 ),
               ),
               const SizedBox(height: 5),
-              // Hiển thị tags
               if (food.tags.isNotEmpty)
                 Wrap(
                   spacing: 5,
@@ -219,6 +174,80 @@ class _CommunityScreenState extends State<CommunityScreen> {
           ),
         ),
       ],
+    );
+  }
+}
+
+// --- WIDGET RIÊNG ĐỂ LOAD THÔNG TIN NGƯỜI ĐĂNG ---
+class _AuthorInfo extends StatelessWidget {
+  final String authorId;
+  final String category;
+
+  const _AuthorInfo({required this.authorId, required this.category});
+
+  // Hàm lấy thông tin user từ Firestore
+  Future<Map<String, dynamic>?> _getUserInfo() async {
+    try {
+      // Giả sử bạn lưu thông tin user trong collection 'users'
+      DocumentSnapshot doc = await FirebaseFirestore.instance.collection('users').doc(authorId).get();
+      if (doc.exists) {
+        return doc.data() as Map<String, dynamic>;
+      }
+    } catch (e) {
+      print("Lỗi lấy info user: $e");
+    }
+    return null;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<Map<String, dynamic>?>(
+      future: _getUserInfo(),
+      builder: (context, snapshot) {
+        // Dữ liệu mặc định nếu đang load hoặc lỗi
+        String name = "Người dùng Cooky";
+        String? avatarUrl;
+
+        if (snapshot.hasData && snapshot.data != null) {
+          final data = snapshot.data!;
+          // Thay 'fullName' và 'avatarUrl' bằng đúng tên trường bạn lưu trong Firestore
+          name = data['fullName'] ?? data['name'] ?? data['email'] ?? "Người dùng ẩn danh";
+          avatarUrl = data['avatarUrl'] ?? data['image']; 
+        }
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+          child: Row(
+            children: [
+              CircleAvatar(
+                backgroundColor: Colors.orange.shade100,
+                backgroundImage: (avatarUrl != null && avatarUrl.isNotEmpty) 
+                    ? NetworkImage(avatarUrl) 
+                    : null,
+                child: (avatarUrl == null || avatarUrl.isEmpty) 
+                    ? const Icon(Icons.person, color: Colors.deepOrange) 
+                    : null,
+              ),
+              const SizedBox(width: 10),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name, 
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                  ),
+                  Text(
+                    category.isNotEmpty ? category : "Món ngon",
+                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                  ),
+                ],
+              ),
+              const Spacer(),
+              const Icon(Icons.more_horiz, color: Colors.grey),
+            ],
+          ),
+        );
+      },
     );
   }
 }

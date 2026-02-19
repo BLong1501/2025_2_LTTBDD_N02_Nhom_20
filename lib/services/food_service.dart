@@ -100,4 +100,14 @@ class FoodService {
       'likedBy': newLikes,
     });
   }
+  Future<void> updateFood(FoodModel updatedFood) async {
+    try {
+      await _firestore
+          .collection('foods')
+          .doc(updatedFood.id)
+          .update(updatedFood.toMap());
+    } catch (e) {
+      throw Exception("Lỗi khi cập nhật: $e");
+    }
+  }
 }

@@ -1,5 +1,6 @@
 import 'package:btl_ltdd/view/community/community_screen.dart';
 import 'package:btl_ltdd/view/home/meal_plan_screen.dart';
+import 'package:btl_ltdd/view/profile/profile_screen.dart';
 import 'package:btl_ltdd/view/widgets/blogger_navigator_screen.dart';
 import 'package:flutter/material.dart';
 // import '../widgets/custom_bottom_nav.dart';
@@ -19,7 +20,7 @@ class _BloggerHomeScreenState extends State<BloggerHomeScreen> {
     const DiscoverView(),
     const CommunityScreen(),
     const MealPlansScreen(), // Default plan value
-    const Center(child: Text("Profile", style: TextStyle(color: Colors.black))),
+    const ProfileScreen(),
   ];
 
   void _onItemTapped(int index) {

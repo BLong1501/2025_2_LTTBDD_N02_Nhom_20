@@ -1,14 +1,16 @@
+// lib/view/food/add_food_screen.dart
+
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:image_picker/image_picker.dart'; // Cần thêm package này
-import 'package:firebase_storage/firebase_storage.dart'; // Cần thêm package này
+import 'package:image_picker/image_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import '../../models/food_model.dart';
 import '../../services/food_service.dart';
 import '../../services/meal_plan_service.dart';
 
 class AddFoodScreen extends StatefulWidget {
-  final String planId; // ID của Plan (rỗng nếu là tạo mới Plan)
+  final String planId;
 
   const AddFoodScreen({super.key, required this.planId});
 
@@ -19,20 +21,27 @@ class AddFoodScreen extends StatefulWidget {
 class _AddFoodScreenState extends State<AddFoodScreen> {
   // Controllers
   final _titleController = TextEditingController();
-  // _imageController không cần dùng nữa vì ta dùng List<File>
   final _ingredientsController = TextEditingController();
   final _instructionsController = TextEditingController();
   final _noteController = TextEditingController();
   final _tagsController = TextEditingController();
+  
+  // --- MỚI: Thêm controller cho Thời gian
+  final _timeController = TextEditingController();
 
   // Variables
   bool _isLoading = false;
   bool _isShared = true;
   String _selectedCategory = 'Món chính';
   
+  // --- MỚI: Variables cho Khẩu phần và Độ khó
+  double _servings = 2.0; // Số người mặc định (2 người)
+  String _selectedDifficulty = 'Dễ';
+  final List<String> _difficulties = ['Dễ', 'Trung bình', 'Khó'];
+  
   // Quản lý ảnh
   final ImagePicker _picker = ImagePicker();
-  List<File> _selectedImages = []; // Danh sách ảnh đã chọn từ thiết bị
+  List<File> _selectedImages = [];
 
   final List<String> _categories = [
     'Món chính', 'Ăn sáng', 'Ăn vặt', 'Tráng miệng', 'Healthy', 'Đồ uống'
@@ -45,22 +54,20 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
     _instructionsController.dispose();
     _noteController.dispose();
     _tagsController.dispose();
+    _timeController.dispose(); // Đừng quên dispose
     super.dispose();
   }
 
-  // 1. Hàm chọn ảnh từ thư viện
   Future<void> _pickImages() async {
     try {
-      // Cho phép chọn nhiều ảnh
       final List<XFile> pickedFiles = await _picker.pickMultiImage(
-        limit: 10 - _selectedImages.length, // Giới hạn số lượng còn lại
-        imageQuality: 70, // Nén ảnh nhẹ
+        limit: 10 - _selectedImages.length,
+        imageQuality: 70,
       );
 
       if (pickedFiles.isNotEmpty) {
         setState(() {
           _selectedImages.addAll(pickedFiles.map((x) => File(x.path)));
-          // Cắt bớt nếu vượt quá 10 ảnh
           if (_selectedImages.length > 10) {
              _selectedImages = _selectedImages.sublist(0, 10);
              ScaffoldMessenger.of(context).showSnackBar(
@@ -74,15 +81,12 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
     }
   }
 
-  // 2. Hàm xoá ảnh khỏi danh sách đã chọn
   void _removeImage(int index) {
     setState(() {
       _selectedImages.removeAt(index);
     });
   }
 
-  // 3. Hàm upload ảnh lên Firebase Storage
- // Sửa lại hàm này trong file add_food_screen.dart
   Future<List<String>> _uploadImages(String userId) async {
     List<String> imageUrls = [];
     final storageRef = FirebaseStorage.instance.ref();
@@ -91,14 +95,9 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
       try {
         String fileName = "${DateTime.now().millisecondsSinceEpoch}.jpg";
         Reference ref = storageRef.child("foods/$userId/$fileName");
-        
-        // 1. Tạo task upload
         UploadTask uploadTask = ref.putFile(imageFile);
-
-        // 2. Đợi upload hoàn tất (quan trọng!)
         TaskSnapshot snapshot = await uploadTask;
 
-        // 3. Chỉ khi upload thành công mới lấy link
         if (snapshot.state == TaskState.success) {
           String downloadUrl = await ref.getDownloadURL();
           imageUrls.add(downloadUrl);
@@ -107,24 +106,16 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
         }
       } catch (e) {
         print("Lỗi chi tiết khi up ảnh: $e");
-        // Bỏ qua ảnh lỗi, tiếp tục vòng lặp
       }
     }
     return imageUrls;
   }
 
-  // 4. Hàm Lưu Món Ăn (Main Logic)
   void _saveFood() async {
-    // Validate cơ bản
     if (_titleController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Vui lòng nhập tên món ăn")));
       return;
     }
-    // (Tuỳ chọn) Bắt buộc phải có ít nhất 1 ảnh
-    // if (_selectedImages.isEmpty) {
-    //   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Vui lòng chọn ít nhất 1 ảnh")));
-    //   return;
-    // }
 
     setState(() => _isLoading = true);
 
@@ -132,31 +123,21 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) return;
 
-      // A. Upload ảnh trước
       List<String> uploadedImageUrls = [];
       if (_selectedImages.isNotEmpty) {
         uploadedImageUrls = await _uploadImages(user.uid);
       }
       
-      // Lấy ảnh đầu tiên làm ảnh đại diện (imageUrl chính), các ảnh khác có thể lưu vào mảng khác nếu Model hỗ trợ
-      // Ở đây ta tạm lấy ảnh đầu tiên làm ảnh chính. Nếu Model FoodModel của bạn chỉ có 1 field `imageUrl` (String), ta chỉ lưu 1 ảnh.
-      // Nếu FoodModel hỗ trợ `List<String> images`, bạn hãy sửa Model.
-      // Giả sử FoodModel hiện tại chỉ có field `imageUrl` là String:
       String mainImageUrl = uploadedImageUrls.isNotEmpty ? uploadedImageUrls.first : ''; 
       
-      // Nếu bạn muốn lưu danh sách ảnh vào description hoặc cần sửa Model để có field `List<String> images`.
-      // Tạm thời mình dùng ảnh đầu tiên cho `imageUrl`.
-
-      // B. Xử lý dữ liệu text
       List<String> ingredientsList = _ingredientsController.text.split('\n').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
       List<String> tagsList = _tagsController.text.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
 
-      // C. Tạo Model
       final newFood = FoodModel(
         id: '', 
         authorId: user.uid,
         title: _titleController.text.trim(),
-        imageUrl: mainImageUrl, // Lưu link ảnh đã upload
+        imageUrl: mainImageUrl,
         ingredients: ingredientsList,
         instructions: _instructionsController.text.trim(),
         note: _noteController.text.trim(),
@@ -166,22 +147,17 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
         tags: tagsList,
         category: _selectedCategory,
         isApproved: true,
+        // --- TRUYỀN DỮ LIỆU MỚI VÀO MODEL ---
+        time: _timeController.text.trim().isNotEmpty ? _timeController.text.trim() : "15 phút", // Mặc định nếu trống
+        servings: "${_servings.toInt()} người", 
+        difficulty: _selectedDifficulty,
       );
 
-      // D. Lưu vào Firestore
-     if (widget.planId.isEmpty) {
-        // --- SỬA LẠI ĐOẠN NÀY ---
-        // SAI: await MealPlanService().createPlanWithFirstFood(newFood);
-        
-        // ĐÚNG: Lưu thẳng vào kho món ăn chung để màn hình chính hiển thị được
-       await FoodService().addFood(newFood); 
+      // Lưu vào kho chung
+      await FoodService().addFood(newFood); 
 
-      // 2. Nếu đang ở trong Plan, lưu THÊM một bản vào Plan đó
+      // Nếu đang trong Plan thì lưu thêm vào Plan
       if (widget.planId.isNotEmpty) {
-        await FoodService().addFoodToPlan(widget.planId, newFood);
-      }
-      } else {
-        // Thêm vào Plan cũ (Giữ nguyên)
         await FoodService().addFoodToPlan(widget.planId, newFood);
       }
 
@@ -223,23 +199,18 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
             
             const SizedBox(height: 15),
             
-            // 2. CHỌN ẢNH (Giao diện mới)
+            // 2. CHỌN ẢNH
             const Text("Hình ảnh (Tối đa 10 ảnh)", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
             const SizedBox(height: 10),
-            
-            // Khu vực hiển thị ảnh
             SizedBox(
               height: 120,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
-                itemCount: _selectedImages.length + 1, // +1 cho nút thêm
+                itemCount: _selectedImages.length + 1,
                 separatorBuilder: (_, __) => const SizedBox(width: 10),
                 itemBuilder: (context, index) {
-                  // Nút thêm ảnh (Luôn nằm cuối hoặc đầu)
                   if (index == _selectedImages.length) {
-                     // Nếu đủ 10 ảnh thì ẩn nút thêm
                      if (_selectedImages.length >= 10) return const SizedBox.shrink();
-                     
                      return InkWell(
                        onTap: _pickImages,
                        child: Container(
@@ -260,32 +231,20 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
                        ),
                      );
                   }
-                  
-                  // Hiển thị ảnh đã chọn
                   return Stack(
                     clipBehavior: Clip.none,
                     children: [
                       ClipRRect(
                         borderRadius: BorderRadius.circular(10),
-                        child: Image.file(
-                          _selectedImages[index],
-                          width: 120,
-                          height: 120,
-                          fit: BoxFit.cover,
-                        ),
+                        child: Image.file(_selectedImages[index], width: 120, height: 120, fit: BoxFit.cover),
                       ),
-                      // Nút xoá ảnh (X)
                       Positioned(
-                        top: 4,
-                        right: 4,
+                        top: 4, right: 4,
                         child: InkWell(
                           onTap: () => _removeImage(index),
                           child: Container(
                             padding: const EdgeInsets.all(2),
-                            decoration: const BoxDecoration(
-                              color: Colors.black54,
-                              shape: BoxShape.circle,
-                            ),
+                            decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
                             child: const Icon(Icons.close, size: 16, color: Colors.white),
                           ),
                         ),
@@ -298,9 +257,82 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
 
             const SizedBox(height: 25),
 
-            // 3. DANH MỤC & TAGS
+            // --- 3. KHU VỰC THÔNG SỐ (THỜI GIAN, KHẨU PHẦN, ĐỘ KHÓ) ---
+            _buildSectionTitle("Chi tiết món ăn"),
+            
+            // Hàng 1: Thời gian và Độ khó
+            Row(
+              children: [
+                Expanded(
+                  child: _buildTextField(
+                    controller: _timeController,
+                    label: "Thời gian làm",
+                    hint: "VD: 15 phút, 1 giờ",
+                    icon: Icons.timer,
+                  ),
+                ),
+                const SizedBox(width: 15),
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    value: _selectedDifficulty,
+                    decoration: InputDecoration(
+                      labelText: "Độ khó",
+                      prefixIcon: const Icon(Icons.local_fire_department, color: Colors.orange),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+                    ),
+                    items: _difficulties.map((String diff) {
+                      return DropdownMenuItem<String>(value: diff, child: Text(diff));
+                    }).toList(),
+                    onChanged: (newValue) => setState(() => _selectedDifficulty = newValue!),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 15),
+
+            // Hàng 2: Slider chọn khẩu phần (Số người)
+            Container(
+              padding: const EdgeInsets.all(15),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey.shade300),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.group, color: Colors.orange),
+                      const SizedBox(width: 10),
+                      Text(
+                        "Khẩu phần: ${_servings.toInt()} người", 
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)
+                      ),
+                    ],
+                  ),
+                  Slider(
+                    value: _servings,
+                    min: 1,
+                    max: 10,
+                    divisions: 9,
+                    activeColor: Colors.deepOrange,
+                    inactiveColor: Colors.orange.shade100,
+                    label: _servings.round().toString(),
+                    onChanged: (double value) {
+                      setState(() {
+                        _servings = value;
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 25),
+
+            // 4. DANH MỤC & TAGS
             _buildSectionTitle("Phân loại"),
-            // ... (Giữ nguyên phần này)
              Row(
               children: [
                 Expanded(
@@ -312,14 +344,9 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
                       contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
                     ),
                     items: _categories.map((String category) {
-                      return DropdownMenuItem<String>(
-                        value: category,
-                        child: Text(category),
-                      );
+                      return DropdownMenuItem<String>(value: category, child: Text(category));
                     }).toList(),
-                    onChanged: (newValue) {
-                      setState(() => _selectedCategory = newValue!);
-                    },
+                    onChanged: (newValue) => setState(() => _selectedCategory = newValue!),
                   ),
                 ),
               ],
@@ -334,7 +361,7 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
 
             const SizedBox(height: 25),
 
-            // 4. NGUYÊN LIỆU & CÁCH LÀM
+            // 5. NGUYÊN LIỆU & CÁCH LÀM
             _buildSectionTitle("Công thức"),
             _buildTextField(
               controller: _ingredientsController,
@@ -354,7 +381,7 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
 
             const SizedBox(height: 25),
 
-            // 5. KHÁC
+            // 6. KHÁC
             _buildSectionTitle("Tùy chọn khác"),
             _buildTextField(
               controller: _noteController,
@@ -398,7 +425,6 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
     );
   }
 
-  // Widget hỗ trợ vẽ Tiêu đề mục (Giữ nguyên)
   Widget _buildSectionTitle(String title) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
@@ -409,7 +435,6 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
     );
   }
 
-  // Widget hỗ trợ vẽ TextField đẹp (Giữ nguyên)
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,
