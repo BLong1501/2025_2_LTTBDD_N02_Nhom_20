@@ -70,20 +70,23 @@ class _TestAuthScreenState extends State<TestAuthScreen> {
             const SizedBox(height: 20),
             
             // 3. Nút Đăng ký (Cần đủ 4 thông tin)
+            // 3. Nút Đăng ký (Cần đủ 4 thông tin)
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.blue, foregroundColor: Colors.white),
               onPressed: () async {
-                String result = await userProvider.register(
-                  _emailController.text.trim(),
-                  _passController.text.trim(),
-                  _nameController.text.trim(),
-                  _usernameController.text.trim(), // Truyền thêm Username
+                // SỬA: Thêm dấu ? và tên các tham số (email:, password:,...)
+                String? result = await userProvider.register(
+                  email: _emailController.text.trim(),
+                  password: _passController.text.trim(),
+                  name: _nameController.text.trim(),
+                  username: _usernameController.text.trim(),
                 );
                 
                 setState(() {
+                  // SỬA: Dùng toán tử ?? để phòng trường hợp result bị null
                   _message = result == "Success" 
                       ? "✅ Đăng ký thành công!" 
-                      : "❌ Lỗi: $result";
+                      : "❌ Lỗi: ${result ?? 'Không xác định'}";
                 });
               },
               child: const Text("ĐĂNG KÝ (Điền đủ 4 ô)"),

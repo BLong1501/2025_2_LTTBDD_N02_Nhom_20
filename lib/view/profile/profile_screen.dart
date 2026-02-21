@@ -1,10 +1,12 @@
 import 'dart:io';
+import 'package:btl_ltdd/view/auth/login_screen.dart';
 import 'package:btl_ltdd/view/profile/edit_profile_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'follow_list_screen.dart'; // NHỚ IMPORT FILE NÀY
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -18,77 +20,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final ImagePicker _picker = ImagePicker();
 
-  String _displayName = "Đang tải...";
-  String _postCount = "0";
-  bool _isLoading = true;
-  bool _isUpdatingAvatar = false; // Biến trạng thái khi đang up ảnh
+  bool _isUpdatingAvatar = false;
 
-  @override
-  void initState() {
-    super.initState();
-    _loadProfileData();
-  }
-
-  Future<void> _loadProfileData() async {
-    if (currentUser == null) return;
-    try {
-      final results = await Future.wait([
-        _firestore.collection('users').doc(currentUser!.uid).get(),
-        _firestore.collection('foods').where('authorId', isEqualTo: currentUser!.uid).count().get()
-      ]);
-
-      final DocumentSnapshot userDoc = results[0] as DocumentSnapshot;
-      if (userDoc.exists) {
-        final userData = userDoc.data() as Map<String, dynamic>;
-        setState(() {
-          _displayName = userData['fullName'] ?? userData['name'] ?? currentUser!.email!.split('@')[0];
-        });
-      } else {
-        setState(() => _displayName = currentUser!.email?.split('@')[0] ?? "Người dùng ẩn danh");
-      }
-
-      final AggregateQuerySnapshot postQuery = results[1] as AggregateQuerySnapshot;
-      setState(() => _postCount = postQuery.count.toString());
-
-    } catch (e) {
-      print("Lỗi load data profile: $e");
-      setState(() => _displayName = "Lỗi hiển thị");
-    } finally {
-      setState(() => _isLoading = false);
-    }
-  }
-
-  // --- HÀM MỚI: XỬ LÝ ĐỔI ẢNH ĐẠI DIỆN ---
+  // --- HÀM XỬ LÝ ĐỔI ẢNH ĐẠI DIỆN ---
   Future<void> _changeAvatar() async {
     if (currentUser == null) return;
 
     try {
-      // 1. Mở thư viện chọn 1 ảnh
       final XFile? pickedFile = await _picker.pickImage(
         source: ImageSource.gallery,
-        imageQuality: 50, // Nén ảnh nhẹ đi để tải nhanh
+        imageQuality: 50,
       );
 
-      if (pickedFile == null) return; // Người dùng hủy chọn ảnh
+      if (pickedFile == null) return; 
 
-      setState(() => _isUpdatingAvatar = true); // Bật hiệu ứng loading trên avatar
+      setState(() => _isUpdatingAvatar = true); 
 
-      // 2. Upload ảnh lên Firebase Storage
       String uid = currentUser!.uid;
       Reference ref = FirebaseStorage.instance.ref().child("avatars/$uid.jpg");
       UploadTask uploadTask = ref.putFile(File(pickedFile.path));
       TaskSnapshot snapshot = await uploadTask;
       
-      // 3. Lấy link ảnh
       String downloadUrl = await ref.getDownloadURL();
 
-      // 4. Cập nhật vào FirebaseAuth (Cực kỳ quan trọng để các lần đăng nhập sau vẫn có ảnh)
       await currentUser!.updatePhotoURL(downloadUrl);
-      await currentUser!.reload(); // Làm mới data user tại local
+      await currentUser!.reload(); 
 
-      // 5. Cập nhật vào Firestore collection 'users' (Phục vụ cho tính năng Cộng đồng hiển thị ảnh tác giả)
       await _firestore.collection('users').doc(uid).set({
-        'avatarUrl': downloadUrl, // Hoặc 'photoURL' tùy cách bạn thiết kế database
+        'avatarUrl': downloadUrl, 
       }, SetOptions(merge: true));
 
       if (mounted) {
@@ -100,10 +59,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Lỗi: $e")));
       }
     } finally {
-      if (mounted) setState(() => _isUpdatingAvatar = false); // Tắt hiệu ứng loading
+      if (mounted) setState(() => _isUpdatingAvatar = false); 
     }
   }
 
+  // --- HÀM ĐĂNG XUẤT ---
   void _logout() async {
     showDialog(
       context: context,
@@ -119,9 +79,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.deepOrange),
             onPressed: () async {
-              Navigator.pop(context);
+              Navigator.pop(context); 
               await FirebaseAuth.instance.signOut();
-              // Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
+              if (mounted) {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LoginScreen()),
+                  (Route<dynamic> route) => false, 
+                );
+              }
             },
             child: const Text("Đăng xuất", style: TextStyle(color: Colors.white)),
           ),
@@ -132,6 +98,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (currentUser == null) return const Center(child: Text("Vui lòng đăng nhập"));
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5), 
       appBar: AppBar(
@@ -141,9 +109,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
         elevation: 0,
         centerTitle: true,
       ),
-      body: _isLoading 
-        ? const Center(child: CircularProgressIndicator(color: Colors.deepOrange))
-        : SingleChildScrollView(
+      
+      // SỬ DỤNG STREAM BUILDER ĐỂ LẮNG NGHE DỮ LIỆU USER REAL-TIME
+      body: StreamBuilder<DocumentSnapshot>(
+        stream: _firestore.collection('users').doc(currentUser!.uid).snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator(color: Colors.deepOrange));
+          }
+
+          if (!snapshot.hasData || !snapshot.data!.exists) {
+            return const Center(child: Text("Không tìm thấy dữ liệu người dùng"));
+          }
+
+          // Lấy dữ liệu từ Firestore
+          final userData = snapshot.data!.data() as Map<String, dynamic>;
+          final String displayName = userData['fullName'] ?? userData['name'] ?? currentUser!.email!.split('@')[0];
+          final String email = userData['email'] ?? currentUser!.email ?? "";
+          
+          // Ưu tiên lấy ảnh từ Firestore (nếu có), không thì lấy từ Auth
+          final String avatarUrl = userData['avatarUrl'] ?? currentUser?.photoURL ?? "";
+
+          // Tính số người theo dõi mình
+          final List<dynamic> followersDynamic = userData['followers'] ?? [];
+          final List<String> followersList = followersDynamic.map((e) => e.toString()).toList();
+          final String followersCount = followersList.length.toString();
+
+          return SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
             child: Column(
               children: [
@@ -154,25 +146,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
                   child: Column(
                     children: [
-                      // Avatar bọc trong GestureDetector để có thể click
+                      // Avatar
                       GestureDetector(
-                        onTap: _changeAvatar, // Gọi hàm đổi ảnh khi bấm vào
+                        onTap: _changeAvatar,
                         child: Stack(
                           alignment: Alignment.bottomRight,
                           children: [
                             CircleAvatar(
                               radius: 50,
                               backgroundColor: Colors.orange.shade100,
-                              backgroundImage: currentUser?.photoURL != null 
-                                  ? NetworkImage(currentUser!.photoURL!) 
-                                  : null,
+                              backgroundImage: avatarUrl.isNotEmpty ? NetworkImage(avatarUrl) : null,
                               child: _isUpdatingAvatar 
-                                  ? const CircularProgressIndicator(color: Colors.white) // Hiện quay đều khi đang up
-                                  : currentUser?.photoURL == null 
+                                  ? const CircularProgressIndicator(color: Colors.white)
+                                  : avatarUrl.isEmpty 
                                       ? const Icon(Icons.person, size: 50, color: Colors.deepOrange) 
                                       : null,
                             ),
-                            // Nút máy ảnh
                             Container(
                               padding: const EdgeInsets.all(6),
                               decoration: const BoxDecoration(color: Colors.deepOrange, shape: BoxShape.circle),
@@ -184,23 +173,45 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       const SizedBox(height: 15),
                       
                       Text(
-                        _displayName,
+                        displayName,
                         style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87),
                       ),
                       const SizedBox(height: 5),
                       Text(
-                        currentUser?.email ?? "Chưa cập nhật email",
+                        email,
                         style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                       ),
                       
                       const SizedBox(height: 25),
 
+                      // HÀNG CHỈ SỐ: DÙNG STREAM ĐỂ CẬP NHẬT REALTIME
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          _buildStatColumn("Bài đăng", _postCount),    
-                          _buildStatColumn("Người theo dõi", "0"), 
-                          _buildStatColumn("Đang theo dõi", "0"),  
+                          // A. BÀI ĐĂNG (Stream đếm số lượng document)
+                          StreamBuilder<QuerySnapshot>(
+                            stream: _firestore.collection('foods').where('authorId', isEqualTo: currentUser!.uid).snapshots(),
+                            builder: (context, postSnap) {
+                              String postCount = postSnap.hasData ? postSnap.data!.docs.length.toString() : "0";
+                              return _buildStatColumn("Bài đăng", postCount, null);
+                            },
+                          ),
+
+                          // B. NGƯỜI THEO DÕI (Lấy trực tiếp từ followersList ở trên)
+                          _buildStatColumn("Người theo dõi", followersCount, () {
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => FollowListScreen(type: 'followers', uids: followersList)));
+                          }), 
+
+                          // C. ĐANG THEO DÕI (Stream tìm những người có chứa ID của mình trong mảng followers)
+                          StreamBuilder<QuerySnapshot>(
+                            stream: _firestore.collection('users').where('followers', arrayContains: currentUser!.uid).snapshots(),
+                            builder: (context, followingSnap) {
+                              String followingCount = followingSnap.hasData ? followingSnap.data!.docs.length.toString() : "0";
+                              return _buildStatColumn("Đang theo dõi", followingCount, () {
+                                Navigator.push(context, MaterialPageRoute(builder: (_) => FollowListScreen(type: 'following', currentUserId: currentUser!.uid)));
+                              });
+                            },
+                          ),
                         ],
                       ),
                     ],
@@ -303,17 +314,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ],
             ),
-          ),
+          );
+        }
+      ),
     );
   }
 
-  Widget _buildStatColumn(String label, String count) {
-    return Column(
-      children: [
-        Text(count, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87)),
-        const SizedBox(height: 4),
-        Text(label, style: TextStyle(fontSize: 13, color: Colors.grey[600])),
-      ],
+  // --- CÁC WIDGET DÙNG CHUNG ---
+  Widget _buildStatColumn(String label, String count, VoidCallback? onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(10),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        child: Column(
+          children: [
+            Text(count, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87)),
+            const SizedBox(height: 4),
+            Text(label, style: TextStyle(fontSize: 13, color: Colors.grey[600])),
+          ],
+        ),
+      ),
     );
   }
 

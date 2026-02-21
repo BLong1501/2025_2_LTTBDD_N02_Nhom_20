@@ -1,6 +1,7 @@
 import 'package:btl_ltdd/models/user_model.dart';
 import 'package:btl_ltdd/providers/user_provider.dart';
 import 'package:btl_ltdd/view/auth/forgot_password_screen.dart';
+import 'package:btl_ltdd/view/auth/register_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // Import thư viện lưu trữ
@@ -296,7 +297,42 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ),
-      
+              const SizedBox(height: 30),
+                      // const Text(
+                      //   "Bằng cách đăng nhập, bạn đồng ý với User Agreement và Privacy Policy.",
+                      //   textAlign: TextAlign.center,
+                      //   style: TextStyle(color: Colors.grey, fontSize: 12),
+                      // ),
+                      
+                      const SizedBox(height: 30), // Thêm khoảng cách
+
+                      // --- MỚI THÊM: NÚT ĐĂNG KÝ Ở ĐÂY ---
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text(
+                            "Chưa có tài khoản? ",
+                            style: TextStyle(color: Colors.black54, fontSize: 15),
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              // Chuyển sang màn hình Đăng ký
+                              // Đảm bảo bạn đã import register_screen.dart ở đầu file
+                              // Navigator.push(context, MaterialPageRoute(builder: (context) => const RegisterScreen()));
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => const RegisterScreen()));
+                            },
+                            child: Text(
+                              "Đăng ký ngay",
+                              style: TextStyle(
+                                color: Colors.lightBlue[400], 
+                                fontSize: 15, 
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 20), // Thêm khoảng cách
               // NÚT ĐĂNG NHẬP (Sticky Footer)
               InkWell(
                 onTap: isLoading ? null : _handleLogin,

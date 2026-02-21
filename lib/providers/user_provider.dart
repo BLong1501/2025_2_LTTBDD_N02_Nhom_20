@@ -20,10 +20,15 @@ class UserProvider extends ChangeNotifier {
 
 
   // 1. Hàm Đăng ký
-  Future<String> register(String email, String password, String name, String username) async {
+ Future<String> register({
+    required String email, 
+    required String password, 
+    required String name, 
+    required String username
+  }) async {
     _setLoading(true);
     
-    // Lưu ý: Đảm bảo bên AuthService hàm register cũng nhận tham số kiểu này
+    // Đảm bảo bên AuthService hàm register cũng nhận tham số kiểu này
     String? result = await _authService.register(
       email: email, 
       password: password, 
@@ -74,7 +79,7 @@ class UserProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // --- HÀM BẠN ĐANG THIẾU Ở ĐÂY ---
+ 
   // Hàm này giúp cập nhật biến _isLoading và báo cho UI biết để quay vòng tròn
   void _setLoading(bool value) {
     _isLoading = value;

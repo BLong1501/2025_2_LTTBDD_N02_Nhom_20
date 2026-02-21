@@ -1,4 +1,7 @@
 import 'package:btl_ltdd/view/food/meal_plan_detail.screen.dart';
+import 'package:btl_ltdd/view/home/meal_plan_screen.dart';
+import 'package:btl_ltdd/view/profile/profile_screen.dart';
+import 'package:btl_ltdd/view/profile/public_profile.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; // Cần import để lấy info user
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -185,10 +188,8 @@ class _AuthorInfo extends StatelessWidget {
 
   const _AuthorInfo({required this.authorId, required this.category});
 
-  // Hàm lấy thông tin user từ Firestore
   Future<Map<String, dynamic>?> _getUserInfo() async {
     try {
-      // Giả sử bạn lưu thông tin user trong collection 'users'
       DocumentSnapshot doc = await FirebaseFirestore.instance.collection('users').doc(authorId).get();
       if (doc.exists) {
         return doc.data() as Map<String, dynamic>;
@@ -204,47 +205,55 @@ class _AuthorInfo extends StatelessWidget {
     return FutureBuilder<Map<String, dynamic>?>(
       future: _getUserInfo(),
       builder: (context, snapshot) {
-        // Dữ liệu mặc định nếu đang load hoặc lỗi
         String name = "Người dùng Cooky";
         String? avatarUrl;
 
         if (snapshot.hasData && snapshot.data != null) {
           final data = snapshot.data!;
-          // Thay 'fullName' và 'avatarUrl' bằng đúng tên trường bạn lưu trong Firestore
           name = data['fullName'] ?? data['name'] ?? data['email'] ?? "Người dùng ẩn danh";
           avatarUrl = data['avatarUrl'] ?? data['image']; 
         }
 
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-          child: Row(
-            children: [
-              CircleAvatar(
-                backgroundColor: Colors.orange.shade100,
-                backgroundImage: (avatarUrl != null && avatarUrl.isNotEmpty) 
-                    ? NetworkImage(avatarUrl) 
-                    : null,
-                child: (avatarUrl == null || avatarUrl.isEmpty) 
-                    ? const Icon(Icons.person, color: Colors.deepOrange) 
-                    : null,
-              ),
-              const SizedBox(width: 10),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    name, 
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                  ),
-                  Text(
-                    category.isNotEmpty ? category : "Món ngon",
-                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                  ),
-                ],
-              ),
-              const Spacer(),
-              const Icon(Icons.more_horiz, color: Colors.grey),
-            ],
+        // --- BỌC INKWELL VÀO ĐÂY ĐỂ BẮT SỰ KIỆN CLICK ---
+        return InkWell(
+          onTap: () {
+            // LUÔN LUÔN CHUYỂN SANG PUBLIC PROFILE DÙ LÀ AI
+            Navigator.push(
+              context, 
+              MaterialPageRoute(builder: (_) => PublicProfileScreen(authorId: authorId))
+            );
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  backgroundColor: Colors.orange.shade100,
+                  backgroundImage: (avatarUrl != null && avatarUrl.isNotEmpty) 
+                      ? NetworkImage(avatarUrl) 
+                      : null,
+                  child: (avatarUrl == null || avatarUrl.isEmpty) 
+                      ? const Icon(Icons.person, color: Colors.deepOrange) 
+                      : null,
+                ),
+                const SizedBox(width: 10),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name, 
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                    ),
+                    Text(
+                      category.isNotEmpty ? category : "Món ngon",
+                      style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                    ),
+                  ],
+                ),
+                const Spacer(),
+                const Icon(Icons.more_horiz, color: Colors.grey),
+              ],
+            ),
           ),
         );
       },
