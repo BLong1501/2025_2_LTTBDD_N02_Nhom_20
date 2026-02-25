@@ -2,7 +2,7 @@ import 'package:btl_ltdd/view/food/edit_food_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // Import để lấy UID hiện tại
 import '../../models/food_model.dart';
-import '../../services/food_service.dart'; // Import để gọi hàm xóa (nếu có)
+// import '../../services/food_service.dart'; // Import để gọi hàm xóa (nếu có)
 
 class MealDetailScreen extends StatelessWidget {
   final FoodModel food;

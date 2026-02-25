@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class CustomBottomNavBar extends StatelessWidget {
   final int selectedIndex;
@@ -35,13 +36,13 @@ class CustomBottomNavBar extends StatelessWidget {
         selectedFontSize: 12,
         unselectedFontSize: 12,
         items: [
-          const BottomNavigationBarItem(
+           BottomNavigationBarItem(
             icon: Icon(Icons.search),
-            label: 'Discover',
+            label: 'discovery'.tr(),
           ),
-          const BottomNavigationBarItem(
+           BottomNavigationBarItem(
             icon: Icon(Icons.people_outline),
-            label: 'Community',
+            label: 'community'.tr(),
           ),
           BottomNavigationBarItem(
             icon: Stack(
@@ -64,11 +65,11 @@ class CustomBottomNavBar extends StatelessWidget {
                 )
               ],
             ),
-            label: 'Meal Plans',
+            label: 'meal_plans'.tr(),
           ),
-          const BottomNavigationBarItem(
+           BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),
-            label: 'Profile',
+            label: 'profile'.tr(),
           ),
         ],
       ),

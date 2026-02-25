@@ -1,12 +1,14 @@
 import 'dart:io';
 import 'package:btl_ltdd/view/auth/login_screen.dart';
+import 'package:btl_ltdd/view/profile/change_password_screen.dart';
 import 'package:btl_ltdd/view/profile/edit_profile_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'follow_list_screen.dart'; // NHỚ IMPORT FILE NÀY
+import 'package:easy_localization/easy_localization.dart';
+import 'follow_list_screen.dart'; //
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -68,13 +70,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("Đăng xuất"),
-        content: const Text("Bạn có chắc chắn muốn đăng xuất khỏi tài khoản?"),
+        title:  Text("logout".tr(), style: TextStyle(fontWeight: FontWeight.bold)),
+        content:  Text("confirm_logout".tr()),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("Hủy", style: TextStyle(color: Colors.grey)),
+            child:  Text("cancel".tr(), style: TextStyle(color: Colors.grey)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.deepOrange),
@@ -89,13 +91,63 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 );
               }
             },
-            child: const Text("Đăng xuất", style: TextStyle(color: Colors.white)),
+            child:  Text("logout".tr(), style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
     );
   }
-
+// --- HÀM CHỌN NGÔN NGỮ ---
+  void _showLanguageBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min, // Chiều cao tự động vừa đủ nội dung
+            children: [
+               Padding(
+                padding: EdgeInsets.all(20),
+                child: Text(
+                  "select_language".tr(), 
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)
+                ),
+              ),
+              const Divider(height: 1, thickness: 1),
+              // Nút Tiếng Việt
+              ListTile(
+                leading:  Text("🇻🇳", style: TextStyle(fontSize: 24)),
+                title:  Text("vietnamese".tr(), style: TextStyle(fontSize: 16)),
+                trailing: context.locale.languageCode == 'vi' 
+                    ? const Icon(Icons.check_circle, color: Colors.deepOrange) 
+                    : null,
+                onTap: () {
+                  context.setLocale(const Locale('vi')); // Lệnh đổi sang Tiếng Việt
+                  Navigator.pop(context); // Đóng bảng chọn
+                },
+              ),
+              // Nút Tiếng Anh
+              ListTile(
+                leading: const Text("🇬🇧", style: TextStyle(fontSize: 24)),
+                title: const Text("English", style: TextStyle(fontSize: 16)),
+                trailing: context.locale.languageCode == 'en' 
+                    ? const Icon(Icons.check_circle, color: Colors.deepOrange) 
+                    : null,
+                onTap: () {
+                  context.setLocale(const Locale('en')); // Lệnh đổi sang Tiếng Anh
+                  Navigator.pop(context); // Đóng bảng chọn
+                },
+              ),
+              const SizedBox(height: 10),
+            ],
+          ),
+        );
+      }
+    );
+  }
   @override
   Widget build(BuildContext context) {
     if (currentUser == null) return const Center(child: Text("Vui lòng đăng nhập"));
@@ -103,7 +155,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5), 
       appBar: AppBar(
-        title: const Text("Trang cá nhân", style: TextStyle(fontWeight: FontWeight.bold)),
+        title:  Text("title_profile".tr(), style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black87,
         elevation: 0,
@@ -119,7 +171,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           }
 
           if (!snapshot.hasData || !snapshot.data!.exists) {
-            return const Center(child: Text("Không tìm thấy dữ liệu người dùng"));
+            return  Center(child: Text("no_results".tr())); // Dịch "No user data found"
           }
 
           // Lấy dữ liệu từ Firestore
@@ -193,12 +245,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             stream: _firestore.collection('foods').where('authorId', isEqualTo: currentUser!.uid).snapshots(),
                             builder: (context, postSnap) {
                               String postCount = postSnap.hasData ? postSnap.data!.docs.length.toString() : "0";
-                              return _buildStatColumn("Bài đăng", postCount, null);
+                              return _buildStatColumn("post".tr(), postCount, null);
                             },
                           ),
 
                           // B. NGƯỜI THEO DÕI (Lấy trực tiếp từ followersList ở trên)
-                          _buildStatColumn("Người theo dõi", followersCount, () {
+                          _buildStatColumn("follower".tr(), followersCount, () {
                             Navigator.push(context, MaterialPageRoute(builder: (_) => FollowListScreen(type: 'followers', uids: followersList)));
                           }), 
 
@@ -207,7 +259,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             stream: _firestore.collection('users').where('followers', arrayContains: currentUser!.uid).snapshots(),
                             builder: (context, followingSnap) {
                               String followingCount = followingSnap.hasData ? followingSnap.data!.docs.length.toString() : "0";
-                              return _buildStatColumn("Đang theo dõi", followingCount, () {
+                              return _buildStatColumn("following".tr(), followingCount, () {
                                 Navigator.push(context, MaterialPageRoute(builder: (_) => FollowListScreen(type: 'following', currentUserId: currentUser!.uid)));
                               });
                             },
@@ -226,9 +278,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Padding(
+                       Padding(
                         padding: EdgeInsets.only(left: 10, bottom: 10),
-                        child: Text("QUẢN LÝ TÀI KHOẢN", style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey)),
+                        child: Text("account_management".tr(), style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey)),
                       ),
                       Container(
                         decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15)),
@@ -236,7 +288,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           children: [
                             _buildMenuTile(
                               icon: Icons.person_outline,
-                              title: "Thay đổi thông tin cá nhân",
+                              title: "change_info".tr(),
                               onTap: () {
                                 Navigator.push(context, MaterialPageRoute(builder: (_) => const EditProfileScreen()));
                               },
@@ -244,9 +296,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             _buildDivider(),
                             _buildMenuTile(
                               icon: Icons.lock_outline,
-                              title: "Thay đổi mật khẩu",
+                              title: "change_password".tr(),
                               onTap: () {
-                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Đang phát triển...")));
+                                Navigator.push(context, MaterialPageRoute(builder: (_) => const ChangePasswordScreen()));
                               },
                             ),
                           ],
@@ -255,9 +307,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                       const SizedBox(height: 25),
 
-                      const Padding(
+                       Padding(
                         padding: EdgeInsets.only(left: 10, bottom: 10),
-                        child: Text("NỘI DUNG & CÀI ĐẶT", style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey)),
+                        child: Text("settings".tr(), style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey)),
                       ),
                       Container(
                         decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15)),
@@ -265,7 +317,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           children: [
                             _buildMenuTile(
                               icon: Icons.favorite_border,
-                              title: "Món ăn đã yêu thích",
+                              title: "favorite_foods".tr(),
                               iconColor: Colors.redAccent,
                               onTap: () {
                                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Đang phát triển...")));
@@ -274,11 +326,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             _buildDivider(),
                             _buildMenuTile(
                               icon: Icons.language,
-                              title: "Ngôn ngữ",
+                              title: "language".tr(args: ["Language"]), // Sử dụng .tr() để dịch tiêu đề
                               trailingText: "Tiếng Việt",
-                              onTap: () {
-                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Đang phát triển...")));
-                              },
+                              onTap: _showLanguageBottomSheet, // Mở bảng chọn ngôn ngữ
                             ),
                           ],
                         ),
@@ -297,12 +347,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             elevation: 0,
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                           ),
-                          child: const Row(
+                          child:  Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(Icons.logout),
                               SizedBox(width: 8),
-                              Text("Đăng xuất", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                              Text("logout".tr(), style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                             ],
                           ),
                         ),
