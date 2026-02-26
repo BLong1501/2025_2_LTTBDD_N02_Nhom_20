@@ -9,6 +9,7 @@ import 'firebase_options.dart';
 import 'providers/user_provider.dart'; 
 import 'providers/admin_food_provider.dart';
 import 'providers/admin_stats_provider.dart';
+import 'providers/discover_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -43,6 +44,8 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => UserProvider()),
         ChangeNotifierProvider(create: (_) => AdminFoodProvider()),
         ChangeNotifierProvider(create: (_) => AdminStatsProvider()),
+        ChangeNotifierProvider(create: (_) => DiscoverProvider(),
+),
       ],
       child: MaterialApp(
         // 4. MỚI THÊM: Cấu hình để MaterialApp nhận diện ngôn ngữ

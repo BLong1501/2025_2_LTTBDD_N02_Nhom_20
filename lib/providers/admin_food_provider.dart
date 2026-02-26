@@ -103,4 +103,26 @@ class AdminFoodProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+  Future<void> toggleFeatured(FoodModel food) async {
+
+  final updated =
+      food.copyWith(
+        isFeatured: !food.isFeatured,
+      );
+
+  await _firestore
+      .collection('foods')
+      .doc(food.id)
+      .update({
+    'isFeatured': updated.isFeatured,
+  });
+
+  final index =
+      _foods.indexWhere((f) => f.id == food.id);
+
+  if (index != -1) {
+    _foods[index] = updated;
+    notifyListeners();
+  }
+}
 }

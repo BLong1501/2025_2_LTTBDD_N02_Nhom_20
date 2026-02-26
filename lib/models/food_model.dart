@@ -17,6 +17,7 @@ class FoodModel {
   final String time;       // Ví dụ: "15 phút", "1 giờ"
   final String servings;   // Ví dụ: "2 người", "4-5 người"
   final String difficulty; // Ví dụ: "Dễ", "Trung bình", "Khó"
+  final bool isFeatured; // Có hiển thị ở Discover hay không
   
 
   FoodModel({
@@ -36,6 +37,7 @@ class FoodModel {
     this.time = "", 
     this.servings = "", 
     this.difficulty = "Dễ",
+    this.isFeatured = false,
   });
 
   // 1. Chuyển từ Firestore Map sang Object
@@ -71,6 +73,7 @@ class FoodModel {
       time: data['time'] ?? '15 phút',
       servings: data['servings'] ?? '2 người',
       difficulty: data['difficulty'] ?? 'Dễ',
+      isFeatured: data['isFeatured'] ?? false,
     );
   }
 
@@ -94,6 +97,7 @@ class FoodModel {
       'time': time,
       'servings': servings,
       'difficulty': difficulty,
+      'isFeatured': isFeatured,
     };
   }
   
@@ -112,6 +116,7 @@ class FoodModel {
     List<String>? tags,
     String? category,
     bool? isApproved,
+    bool? isFeatured,
     
     // --- BỔ SUNG 3 TRƯỜNG MỚI VÀO ĐÂY ---
     String? time,
@@ -137,6 +142,7 @@ class FoodModel {
       time: time ?? this.time,
       servings: servings ?? this.servings,
       difficulty: difficulty ?? this.difficulty,
+      isFeatured: isFeatured ?? this.isFeatured,
     );
   }
 }

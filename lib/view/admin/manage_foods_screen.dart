@@ -76,6 +76,9 @@ class _ManageFoodsScreenState
                             ),
                           );
                         }
+                        if (value == "feature") {
+                          provider.toggleFeatured(food);
+                        }
                       },
                       itemBuilder: (_) => [
                         PopupMenuItem(
@@ -93,6 +96,10 @@ class _ManageFoodsScreenState
                         const PopupMenuItem(
                           value: "delete",
                           child: Text("Xóa bài"),
+                        ),
+                        const PopupMenuItem(
+                          value: "feature",
+                          child: Text("Hiển thị Discover"),
                         ),
                       ],
                     ),
