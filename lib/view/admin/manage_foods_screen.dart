@@ -1,123 +1,77 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../providers/admin_food_provider.dart';
-import '../../models/food_model.dart';
-import 'add_edit_food_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-
-class ManageFoodsScreen extends StatefulWidget {
+class ManageFoodsScreen extends StatelessWidget {
   const ManageFoodsScreen({super.key});
 
   @override
-  State<ManageFoodsScreen> createState() =>
-      _ManageFoodsScreenState();
-}
-
-class _ManageFoodsScreenState
-    extends State<ManageFoodsScreen> {
-
-  @override
-  void initState() {
-    super.initState();
-
-    Future.microtask(() =>
-        Provider.of<AdminFoodProvider>(context,
-                listen: false)
-            .fetchFoods());
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final provider =
-        Provider.of<AdminFoodProvider>(context);
-
     return Scaffold(
+      backgroundColor: const Color(0xfff5f6fa),
       appBar: AppBar(
         title: const Text("Kiểm duyệt công thức"),
+        backgroundColor: const Color(0xff6A5AE0),
       ),
-      body: provider.isLoading
-          ? const Center(
-              child: CircularProgressIndicator())
-          : ListView.builder(
-              itemCount: provider.foods.length,
-              itemBuilder: (context, index) {
-                final FoodModel food =
-                    provider.foods[index];
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance.collection("foods").snapshots(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-                return Card(
-                  margin:
-                      const EdgeInsets.all(8),
-                  child: ListTile(
-                    leading: Image.network(
-                      food.imageUrl,
-                      width: 50,
-                      height: 50,
-                      fit: BoxFit.cover,
-                    ),
-                    title: Text(food.title),
-                    subtitle: Text(
-                        "Author: ${food.authorId}\n"
-                        "Status: ${food.isApproved ? "Đã duyệt" : "Bị ẩn"}"),
-                    trailing:
-                        PopupMenuButton<String>(
-                      onSelected: (value) {
-                        if (value == "delete") {
-                          provider.deleteFood(food);
-                        }
-                        if (value == "approve") {
-                          provider
-                              .toggleApproval(food);
-                        }
-                        if (value == "edit") {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => AddEditFoodScreen(food: food),
-                            ),
-                          );
-                        }
-                        if (value == "feature") {
-                          provider.toggleFeatured(food);
-                        }
-                      },
-                      itemBuilder: (_) => [
-                        PopupMenuItem(
-                          value: "approve",
-                          child: Text(
-                            food.isApproved
-                                ? "Ẩn bài"
-                                : "Duyệt bài",
-                          ),
-                        ),
-                        const PopupMenuItem(
-                          value: "edit",
-                          child: Text("Sửa"),
-                        ),
-                        const PopupMenuItem(
-                          value: "delete",
-                          child: Text("Xóa bài"),
-                        ),
-                        const PopupMenuItem(
-                          value: "feature",
-                          child: Text("Hiển thị Discover"),
-                        ),
-                      ],
-                    ),
+          final foods = snapshot.data!.docs;
+
+          return ListView.builder(
+            padding: const EdgeInsets.all(15),
+            itemCount: foods.length,
+            itemBuilder: (context, index) {
+              final data = foods[index];
+
+              return Card(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20)),
+                margin: const EdgeInsets.only(bottom: 15),
+                child: ListTile(
+                  leading: Image.network(
+                    data['image'],
+                    width: 60,
+                    fit: BoxFit.cover,
                   ),
-                );
-              },
-            ),
-      floatingActionButton: FloatingActionButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const AddEditFoodScreen(),
+                  title: Text(data['name']),
+                  subtitle: Text(data['email'] ?? ""),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green),
+                        onPressed: () {
+                          FirebaseFirestore.instance
+                              .collection("foods")
+                              .doc(data.id)
+                              .update({"status": "approved"});
+                        },
+                        child: const Text("Duyệt"),
+                      ),
+                      const SizedBox(width: 5),
+                      IconButton(
+                        icon: const Icon(Icons.delete,
+                            color: Colors.red),
+                        onPressed: () {
+                          FirebaseFirestore.instance
+                              .collection("foods")
+                              .doc(data.id)
+                              .delete();
+                        },
+                      )
+                    ],
                   ),
-                );
-              },
-              child: const Icon(Icons.add),
-            ),
+                ),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }

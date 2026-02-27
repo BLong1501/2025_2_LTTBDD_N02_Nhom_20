@@ -1,102 +1,57 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../providers/admin_user_provider.dart';
-import '../../models/user_model.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-class ManageUsersScreen extends StatefulWidget {
+class ManageUsersScreen extends StatelessWidget {
   const ManageUsersScreen({super.key});
 
   @override
-  State<ManageUsersScreen> createState() => _ManageUsersScreenState();
-}
-
-class _ManageUsersScreenState extends State<ManageUsersScreen> {
-  @override
-  void initState() {
-    super.initState();
-
-    Future.microtask(() {
-      Provider.of<AdminUserProvider>(context, listen: false)
-          .fetchUsers();
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final adminProvider = Provider.of<AdminUserProvider>(context);
-
     return Scaffold(
+      backgroundColor: const Color(0xfff5f6fa),
       appBar: AppBar(
         title: const Text("Quản lý người dùng"),
+        backgroundColor: const Color(0xff6A5AE0),
       ),
-      body: adminProvider.isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : adminProvider.users.isEmpty
-              ? const Center(child: Text("Chưa có người dùng"))
-              : ListView.builder(
-                  itemCount: adminProvider.users.length,
-                  itemBuilder: (context, index) {
-                    final UserModel user =
-                        adminProvider.users[index];
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance.collection("users").snapshots(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-                    return Card(
-                      margin: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          backgroundImage: user.avatarUrl != null
-                              ? NetworkImage(user.avatarUrl!)
-                              : null,
-                          child: user.avatarUrl == null
-                              ? Text(user.name.isNotEmpty
-                                  ? user.name[0]
-                                  : "?")
-                              : null,
-                        ),
-                        title: Text(user.name),
-                        subtitle: Column(
-                          crossAxisAlignment:
-                              CrossAxisAlignment.start,
-                          children: [
-                            Text("Email: ${user.email}"),
-                            Text("Role: ${user.role.name}"),
-                            if (user.isLocked)
-                              const Text(
-                                "Tài khoản đang bị khóa",
-                                style: TextStyle(
-                                    color: Colors.red),
-                              ),
-                          ],
-                        ),
-                        trailing: PopupMenuButton<String>(
-                          onSelected: (value) async {
-                            if (value == "lock") {
-                              await adminProvider
-                                  .toggleLockUser(user);
-                            } else if (value == "role") {
-                              await adminProvider
-                                  .changeUserRole(user);
-                            }
-                          },
-                          itemBuilder: (context) => [
-                            PopupMenuItem(
-                              value: "lock",
-                              child: Text(
-                                user.isLocked
-                                    ? "Mở khóa"
-                                    : "Khóa tài khoản",
-                              ),
-                            ),
-                            const PopupMenuItem(
-                              value: "role",
-                              child: Text("Đổi vai trò"),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
+          final users = snapshot.data!.docs;
+
+          return ListView.builder(
+            padding: const EdgeInsets.all(15),
+            itemCount: users.length,
+            itemBuilder: (context, index) {
+              final data = users[index];
+
+              return Card(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20)),
+                margin: const EdgeInsets.only(bottom: 15),
+                child: ListTile(
+                  leading: CircleAvatar(
+                    child: Text(data['name'][0]),
+                  ),
+                  title: Text(data['name']),
+                  subtitle: Text(data['email']),
+                  trailing: Switch(
+                    value: data['active'] ?? true,
+                    onChanged: (value) {
+                      FirebaseFirestore.instance
+                          .collection("users")
+                          .doc(data.id)
+                          .update({"active": value});
+                    },
+                  ),
                 ),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }
