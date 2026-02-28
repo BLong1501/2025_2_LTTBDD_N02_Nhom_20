@@ -48,12 +48,29 @@ class _ManageFoodsScreenState
                   margin:
                       const EdgeInsets.all(8),
                   child: ListTile(
-                    leading: Image.network(
-                      food.imageUrl,
-                      width: 50,
-                      height: 50,
-                      fit: BoxFit.cover,
-                    ),
+                   // Xóa Image.network cũ đi và thay bằng đoạn này:
+                    leading: food.imageUrl.isNotEmpty
+                        ? Image.network(
+                            food.imageUrl,
+                            width: 50,
+                            height: 50,
+                            fit: BoxFit.cover,
+                            // --- THÊM TẤM KHIÊN NÀY VÀO LÀ HẾT LỖI ---
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                width: 50,
+                                height: 50,
+                                color: Colors.grey[300],
+                                child: const Icon(Icons.broken_image, color: Colors.grey),
+                              );
+                            },
+                          )
+                        : Container(
+                            width: 50,
+                            height: 50,
+                            color: Colors.orange[100],
+                            child: const Icon(Icons.fastfood, color: Colors.deepOrange),
+                          ),
                     title: Text(food.title),
                     subtitle: Text(
                         "Author: ${food.authorId}\n"

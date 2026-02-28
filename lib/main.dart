@@ -1,3 +1,4 @@
+import 'package:btl_ltdd/providers/admin_user_provider.dart';
 import 'package:btl_ltdd/view/auth/login_screen.dart';
 import 'package:btl_ltdd/view/auth_screen.dart';
 import 'package:flutter/material.dart';
@@ -44,8 +45,9 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => UserProvider()),
         ChangeNotifierProvider(create: (_) => AdminFoodProvider()),
         ChangeNotifierProvider(create: (_) => AdminStatsProvider()),
-        ChangeNotifierProvider(create: (_) => DiscoverProvider(),
-),
+        ChangeNotifierProvider(create: (_) => DiscoverProvider()),
+        ChangeNotifierProvider(create: (_) => AdminUserProvider()),
+
       ],
       child: MaterialApp(
         // 4. MỚI THÊM: Cấu hình để MaterialApp nhận diện ngôn ngữ
