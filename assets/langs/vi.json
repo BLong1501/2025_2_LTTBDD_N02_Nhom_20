@@ -56,5 +56,20 @@
   "other": "Khác",
   "describe": "Mô tả",
   "select_category": "Chọn danh mục",
-  "select_image": "Chọn hình ảnh"
+  "select_image": "Chọn hình ảnh",
+  "share": "Chia sẻ",
+  "edit_recipe": "Chỉnh sửa công thức",
+  "delete_recipe": "Xóa công thức",
+  "confirm_delete_recipe": "Bạn có chắc chắn muốn xóa công thức này?",
+  "recipe_deleted": "Công thức đã bị xóa",
+  "recipe_updated": "Công thức đã được cập nhật",
+  "add_recipe": "Thêm công thức mới",
+  "category": "Danh mục",
+  "description": "Mô tả",
+  "tag": "Thẻ",
+  "add_img": "Thêm hình ảnh",
+  "share_publicly": "Chia sẻ công khai?",
+  "personal_note": "Ghi chú cá nhân",
+  "recipe_list": "Danh sách công thức",
+  "your_meal_plans": "Kế hoạch bữa ăn của bạn"
 }

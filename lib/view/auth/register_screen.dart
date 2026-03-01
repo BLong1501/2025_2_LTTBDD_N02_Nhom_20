@@ -62,7 +62,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       // Chuyển thẳng vào màn hình chính của Blogger
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) => const BloggerHomeScreen()),
+        MaterialPageRoute(builder: (context) => BloggerHomeScreen()),
         (route) => false,
       );
     } else {

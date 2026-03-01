@@ -1,6 +1,7 @@
 // lib/view/food/add_food_screen.dart
 
 import 'dart:io';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
@@ -382,15 +383,15 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
             const SizedBox(height: 25),
 
             // 6. KHÁC
-            _buildSectionTitle("Tùy chọn khác"),
+            _buildSectionTitle("other".tr()),
             _buildTextField(
               controller: _noteController,
-              label: "Ghi chú cá nhân",
+              label: "personal_note".tr(),
               icon: Icons.note,
             ),
-            const SizedBox(height: 10),
+             SizedBox(height: 10),
             SwitchListTile(
-              title: const Text("Chia sẻ công khai?"),
+              title:  Text("share".tr()),
               value: _isShared,
               activeColor: Colors.deepOrange,
               contentPadding: EdgeInsets.zero,
@@ -412,8 +413,8 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
                 ),
                 child: _isLoading
                     ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text(
-                        "LƯU MÓN ĂN",
+                    :  Text(
+                        "save".tr(),
                         style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
                       ),
               ),

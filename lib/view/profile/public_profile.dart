@@ -1,4 +1,4 @@
-import 'package:btl_ltdd/view/food/meal_plan_detail.screen.dart';
+import 'package:btl_ltdd/view/food/meal_plan_detail_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';

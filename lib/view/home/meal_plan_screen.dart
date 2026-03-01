@@ -1,4 +1,5 @@
-import 'package:btl_ltdd/view/food/meal_plan_detail.screen.dart';
+import 'package:btl_ltdd/view/food/meal_plan_detail_screen.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import '../../models/food_model.dart';
 import '../../services/food_service.dart';
@@ -46,7 +47,7 @@ class _MealPlansScreenState extends State<MealPlansScreen> {
                 child: Row(
                   children: [
                     Text(
-                      "DANH SÁCH MÓN ĂN ($foodCount)", // Sửa tiêu đề cho phù hợp context món ăn
+                      "${"recipe_list".tr()} (${foods.length})", // Sửa tiêu đề cho phù hợp context món ăn
                       style: TextStyle(
                         color: Colors.grey[600],
                         fontWeight: FontWeight.bold,
@@ -100,7 +101,7 @@ class _MealPlansScreenState extends State<MealPlansScreen> {
               bottomRight: Radius.circular(30),
             ),
           ),
-          child: const Column(
+          child:  Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
@@ -111,7 +112,7 @@ class _MealPlansScreenState extends State<MealPlansScreen> {
                 ],
               ),
               SizedBox(height: 5),
-              Text("Kế hoạch bữa ăn", style: TextStyle(color: Colors.white70, fontSize: 14)),
+              Text("your_meal_plans".tr(), style: TextStyle(color: Colors.white70, fontSize: 14)),
             ],
           ),
         ),
@@ -137,13 +138,13 @@ class _MealPlansScreenState extends State<MealPlansScreen> {
                 ],
                 border: Border.all(color: Colors.orange.shade100, width: 1),
               ),
-              child: const Row(
+              child:  Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(Icons.add, color: Colors.deepOrange),
                   SizedBox(width: 8),
                   Text(
-                    "Thêm món mới", // Đổi text cho phù hợp logic thêm món
+                    "add_recipe".tr(), // Đổi text cho phù hợp logic thêm món
                     style: TextStyle(
                       color: Colors.deepOrange,
                       fontWeight: FontWeight.bold,

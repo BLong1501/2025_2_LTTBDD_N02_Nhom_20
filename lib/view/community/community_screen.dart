@@ -1,4 +1,4 @@
-import 'package:btl_ltdd/view/food/meal_plan_detail.screen.dart';
+import 'package:btl_ltdd/view/food/meal_plan_detail_screen.dart';
 import 'package:btl_ltdd/view/home/meal_plan_screen.dart';
 import 'package:btl_ltdd/view/profile/profile_screen.dart';
 import 'package:btl_ltdd/view/profile/public_profile.dart';
