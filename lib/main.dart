@@ -1,3 +1,4 @@
+import 'package:btl_ltdd/providers/admin_dashboard_provider.dart';
 import 'package:btl_ltdd/providers/admin_user_provider.dart';
 import 'package:btl_ltdd/view/auth/login_screen.dart';
 import 'package:btl_ltdd/view/auth_screen.dart';
@@ -9,7 +10,6 @@ import 'package:easy_localization/easy_localization.dart'; // 1. MỚI THÊM: Im
 import 'firebase_options.dart';
 import 'providers/user_provider.dart'; 
 import 'providers/admin_food_provider.dart';
-import 'providers/admin_stats_provider.dart';
 import 'providers/discover_provider.dart';
 import 'package:btl_ltdd/services/admin_dashboard_service.dart';
 
@@ -45,10 +45,10 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => UserProvider()),
         ChangeNotifierProvider(create: (_) => AdminFoodProvider()),
-        ChangeNotifierProvider(create: (_) => AdminStatsProvider()),
         ChangeNotifierProvider(create: (_) => DiscoverProvider()),
         ChangeNotifierProvider(create: (_) => AdminUserProvider()),
         ChangeNotifierProvider(create: (_) => AdminDashboardService()),
+        ChangeNotifierProvider(create: (_) => AdminDashboardProvider()),
       ],
       child: MaterialApp(
         // 4. MỚI THÊM: Cấu hình để MaterialApp nhận diện ngôn ngữ

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-import '../services/admin_dashboard_service.dart';
-import '../models/dashboard_model.dart';
+import '../../services/admin_dashboard_service.dart';
+import '../../models/dashboard_model.dart';
 import 'manage_users_screen.dart';
 import 'manage_foods_screen.dart';
 
@@ -15,6 +16,9 @@ class AdminHomeScreen extends StatefulWidget {
 }
 
 class _AdminHomeScreenState extends State<AdminHomeScreen> {
+
+  int _selectedIndex = 0;
+
   @override
   void initState() {
     super.initState();
@@ -28,53 +32,106 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
 
     return Scaffold(
       backgroundColor: Colors.grey[100],
+
+      /// ================= APP BAR =================
       appBar: AppBar(
         title: const Text("Admin Dashboard"),
         centerTitle: true,
         backgroundColor: Colors.deepPurple,
-      ),
-      body: dashboard.isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+        actions: [
 
-                  /// =========================
-                  /// 1️⃣ HEADER SUMMARY
-                  /// =========================
-                  _buildHeader(dashboard.model),
-
-                  const SizedBox(height: 20),
-
-                  /// =========================
-                  /// 2️⃣ STATISTIC CARDS
-                  /// =========================
-                  _buildStatisticCards(dashboard.model),
-
-                  const SizedBox(height: 30),
-
-                  /// =========================
-                  /// 3️⃣ CHART
-                  /// =========================
-                  _buildChartSection(dashboard.model),
-
-                  const SizedBox(height: 30),
-
-                  /// =========================
-                  /// 4️⃣ QUICK ACTIONS
-                  /// =========================
-                  _buildQuickActions(),
-                ],
+          /// Notification
+          Stack(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.notifications_none),
+                onPressed: () {},
               ),
-            ),
+              Positioned(
+                right: 10,
+                top: 10,
+                child: Container(
+                  width: 8,
+                  height: 8,
+                  decoration: const BoxDecoration(
+                    color: Colors.red,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          /// Logout
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () async {
+              await FirebaseAuth.instance.signOut();
+              Navigator.pushReplacementNamed(context, '/login');
+            },
+          ),
+        ],
+      ),
+
+      /// ================= BODY =================
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: [
+          _buildDashboard(dashboard),
+          const ManageUsersScreen(),
+          const ManageFoodsScreen(),
+        ],
+      ),
+
+      /// ================= BOTTOM NAV =================
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
+        selectedItemColor: Colors.deepPurple,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.dashboard),
+            label: "Dashboard",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.people),
+            label: "Users",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.restaurant_menu),
+            label: "Công thức",
+          ),
+        ],
+      ),
     );
   }
 
-  /// ======================================================
-  /// HEADER
-  /// ======================================================
+  /// ================= DASHBOARD CONTENT =================
+  Widget _buildDashboard(AdminDashboardService dashboard) {
+    if (dashboard.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildHeader(dashboard.model),
+          const SizedBox(height: 20),
+          _buildStatisticCards(dashboard.model),
+          const SizedBox(height: 30),
+          _buildChartSection(dashboard.model),
+        ],
+      ),
+    );
+  }
+
+  /// ================= HEADER =================
   Widget _buildHeader(DashboardModel? model) {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -101,9 +158,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     );
   }
 
-  /// ======================================================
-  /// STATISTIC CARDS
-  /// ======================================================
+  /// ================= STAT CARDS =================
   Widget _buildStatisticCards(DashboardModel? model) {
     return GridView.count(
       crossAxisCount: 2,
@@ -158,9 +213,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     );
   }
 
-  /// ======================================================
-  /// CHART
-  /// ======================================================
+  /// ================= CHART =================
   Widget _buildChartSection(DashboardModel? model) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -176,35 +229,9 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
           child: BarChart(
             BarChartData(
               barGroups: _buildBarGroups(model),
-              titlesData: FlTitlesData(
-                leftTitles: AxisTitles(
-                  sideTitles: SideTitles(showTitles: true),
-                ),
-                bottomTitles: AxisTitles(
-                  sideTitles: SideTitles(
-                    showTitles: true,
-                    getTitlesWidget: (value, meta) {
-                      const months = [
-                        "Jan","Feb","Mar","Apr",
-                        "May","Jun","Jul","Aug",
-                        "Sep","Oct","Nov","Dec"
-                      ];
-                      return Text(months[value.toInt()]);
-                    },
-                  ),
-                ),
-              ),
             ),
           ),
         ),
-        const SizedBox(height: 10),
-        Row(
-          children: const [
-            _Legend(color: Colors.orange, text: "Pending"),
-            SizedBox(width: 20),
-            _Legend(color: Colors.purple, text: "Approved"),
-          ],
-        )
       ],
     );
   }
@@ -230,105 +257,5 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         ],
       );
     });
-  }
-
-  /// ======================================================
-  /// QUICK ACTIONS
-  /// ======================================================
-  Widget _buildQuickActions() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          "Quick Actions",
-          style: TextStyle(
-              fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: _actionCard(
-                icon: Icons.person,
-                title: "Quản lý người dùng",
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) => const ManageUsersScreen()),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _actionCard(
-                icon: Icons.restaurant_menu,
-                title: "Quản lý công thức",
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) => const ManageFoodsScreen()),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _actionCard(
-      {required IconData icon,
-      required String title,
-      required VoidCallback onTap}) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-                color: Colors.grey.shade300,
-                blurRadius: 6,
-                offset: const Offset(2, 2))
-          ],
-        ),
-        child: Column(
-          children: [
-            Icon(icon, size: 32, color: Colors.deepPurple),
-            const SizedBox(height: 10),
-            Text(title,
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontWeight: FontWeight.w500))
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// ======================================================
-/// LEGEND WIDGET
-/// ======================================================
-class _Legend extends StatelessWidget {
-  final Color color;
-  final String text;
-
-  const _Legend({required this.color, required this.text});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Container(width: 12, height: 12, color: color),
-        const SizedBox(width: 6),
-        Text(text),
-      ],
-    );
   }
 }
