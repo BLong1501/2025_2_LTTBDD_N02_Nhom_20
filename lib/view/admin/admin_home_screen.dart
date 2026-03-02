@@ -7,6 +7,7 @@ import '../../services/admin_dashboard_service.dart';
 import '../../models/dashboard_model.dart';
 import 'manage_users_screen.dart';
 import 'manage_foods_screen.dart';
+import '../auth/login_screen.dart';
 
 class AdminHomeScreen extends StatefulWidget {
   const AdminHomeScreen({Key? key}) : super(key: key);
@@ -63,11 +64,19 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
           ),
 
           /// Logout
+          /// Logout
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () async {
               await FirebaseAuth.instance.signOut();
-              Navigator.pushReplacementNamed(context, '/login');
+              
+              // CÁCH MỚI: Chuyển thẳng tới class LoginScreen
+              if (context.mounted) {
+                Navigator.pushReplacement(
+                  context, 
+                  MaterialPageRoute(builder: (context) => const LoginScreen()),
+                );
+              }
             },
           ),
         ],
