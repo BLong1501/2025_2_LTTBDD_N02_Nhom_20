@@ -14,9 +14,13 @@ class AdminDashboardService extends ChangeNotifier {
       isLoading = true;
       notifyListeners();
 
-      /// 1️⃣ LẤY 4 THỐNG KÊ
-      final usersSnapshot = await _firestore.collection('users').get();
-      final foodsSnapshot = await _firestore.collection('foods').get();
+      final now = DateTime.now();
+
+      final usersSnapshot =
+          await _firestore.collection('users').get();
+
+      final foodsSnapshot =
+          await _firestore.collection('foods').get();
 
       final pendingSnapshot = await _firestore
           .collection('foods')
@@ -28,20 +32,18 @@ class AdminDashboardService extends ChangeNotifier {
           .where('isFeatured', isEqualTo: true)
           .get();
 
-      /// 2️⃣ TẠO MẢNG 12 THÁNG
       List<int> monthlyPending = List.filled(12, 0);
       List<int> monthlyApproved = List.filled(12, 0);
 
       for (var doc in foodsSnapshot.docs) {
         final data = doc.data();
-        final status = data['status'];
+
+        final status = (data['status'] ?? '').toString().toLowerCase();
         final Timestamp? timestamp = data['createdAt'];
-
         if (timestamp == null) continue;
-
         DateTime date = timestamp.toDate();
+        if (date.year != now.year) continue;
         int monthIndex = date.month - 1;
-
         if (status == 'pending') {
           monthlyPending[monthIndex]++;
         } else if (status == 'approved') {
@@ -49,7 +51,6 @@ class AdminDashboardService extends ChangeNotifier {
         }
       }
 
-      /// 3️⃣ GÁN MODEL
       model = DashboardModel(
         totalUsers: usersSnapshot.docs.length,
         totalFoods: foodsSnapshot.docs.length,
@@ -61,10 +62,11 @@ class AdminDashboardService extends ChangeNotifier {
 
       isLoading = false;
       notifyListeners();
+
     } catch (e) {
       isLoading = false;
       notifyListeners();
       debugPrint("Dashboard Error: $e");
     }
-  }
+  } 
 }
