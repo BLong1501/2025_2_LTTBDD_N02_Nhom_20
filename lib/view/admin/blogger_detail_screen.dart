@@ -117,20 +117,18 @@ class BloggerDetailScreen extends StatelessWidget {
                                 width: 60,
                                 height: 60,
                                 color: Colors.grey[200], // Nền xám lót dưới
-                                child: food.imageUrl.isNotEmpty
-                                    ? Image.network(
-                                        food.imageUrl,
-                                        fit: BoxFit.cover,
-                                        // Tấm khiên chống văng app khi link ảnh chết
-                                        errorBuilder: (context, error, stackTrace) => const Icon(
-                                          Icons.broken_image,
-                                          color: Colors.grey,
-                                        ),
-                                      )
-                                    : const Icon(
-                                        Icons.fastfood,
-                                        color: Colors.deepPurple,
-                                      ),
+                                child: (food.imageUrl.isNotEmpty &&
+                                  food.imageUrl.startsWith('http'))
+                              ? Image.network(
+                                  food.imageUrl,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      const Icon(Icons.broken_image, color: Colors.grey),
+                                )
+                              : const Icon(
+                                  Icons.fastfood,
+                                  color: Colors.deepPurple,
+                                ),
                               ),
                             ),
                             title: Text(food.title),
