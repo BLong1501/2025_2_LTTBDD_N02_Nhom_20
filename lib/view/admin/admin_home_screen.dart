@@ -43,40 +43,51 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
 
           /// Notification
           Stack(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.notifications_none),
-                onPressed: () {},
-              ),
-              Positioned(
-                right: 10,
-                top: 10,
-                child: Container(
-                  width: 8,
-                  height: 8,
-                  decoration: const BoxDecoration(
-                    color: Colors.red,
-                    shape: BoxShape.circle,
+      children: [
+        IconButton(
+          icon: const Icon(Icons.notifications_none),
+          onPressed: () {
+            showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: const Text("Thông báo"),
+                content: const Text("Hiện chưa có thông báo mới."),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text("Đóng"),
                   ),
-                ),
+                ],
               ),
-            ],
+            );
+          },
+        ),
+        Positioned(
+          right: 10,
+          top: 10,
+          child: Container(
+            width: 8,
+            height: 8,
+            decoration: const BoxDecoration(
+              color: Colors.red,
+              shape: BoxShape.circle,
+            ),
           ),
-
-          /// Logout
+        ),
+      ],
+    ),
           /// Logout
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () async {
               await FirebaseAuth.instance.signOut();
-              
-              // CÁCH MỚI: Chuyển thẳng tới class LoginScreen
-              if (context.mounted) {
-                Navigator.pushReplacement(
-                  context, 
-                  MaterialPageRoute(builder: (context) => const LoginScreen()),
-                );
-              }
+
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(
+                  builder: (_) => const LoginScreen(), // Import màn login
+                ),
+                (route) => false,
+              );
             },
           ),
         ],
