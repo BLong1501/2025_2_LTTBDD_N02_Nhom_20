@@ -9,7 +9,7 @@ class AdminDashboardService extends ChangeNotifier {
   DashboardModel? model;
 
   /// LOAD TOÀN BỘ DASHBOARD
-  Future<void> loadDashboardData() async {
+    Future<void> loadDashboardData() async {
     try {
       isLoading = true;
       notifyListeners();
@@ -32,22 +32,38 @@ class AdminDashboardService extends ChangeNotifier {
           .where('isFeatured', isEqualTo: true)
           .get();
 
-      List<int> monthlyPending = List.filled(12, 0);
-      List<int> monthlyApproved = List.filled(12, 0);
+      List<int> monthlyUsers = List.filled(12, 0);
+      List<int> monthlyRecipes = List.filled(12, 0);
+      List<int> monthlyBloggerPosts = List.filled(12, 0);
 
-      for (var doc in foodsSnapshot.docs) {
+      /// USERS
+      for (var doc in usersSnapshot.docs) {
         final data = doc.data();
-
-        final status = (data['status'] ?? '').toString().toLowerCase();
         final Timestamp? timestamp = data['createdAt'];
         if (timestamp == null) continue;
+
         DateTime date = timestamp.toDate();
         if (date.year != now.year) continue;
+
         int monthIndex = date.month - 1;
-        if (status == 'pending') {
-          monthlyPending[monthIndex]++;
-        } else if (status == 'approved') {
-          monthlyApproved[monthIndex]++;
+        monthlyUsers[monthIndex]++;
+      }
+
+      /// RECIPES + BLOGGER
+      for (var doc in foodsSnapshot.docs) {
+        final data = doc.data();
+        final Timestamp? timestamp =
+            data['updatedAt'] ?? data['createdAt'];
+        if (timestamp == null) continue;
+
+        DateTime date = timestamp.toDate();
+        if (date.year != now.year) continue;
+
+        int monthIndex = date.month - 1;
+        monthlyRecipes[monthIndex]++;
+
+        if (data['isBlogger'] == true) {
+          monthlyBloggerPosts[monthIndex]++;
         }
       }
 
@@ -56,8 +72,9 @@ class AdminDashboardService extends ChangeNotifier {
         totalFoods: foodsSnapshot.docs.length,
         pendingFoods: pendingSnapshot.docs.length,
         featuredFoods: featuredSnapshot.docs.length,
-        monthlyPending: monthlyPending,
-        monthlyApproved: monthlyApproved,
+        monthlyUsers: monthlyUsers,
+        monthlyRecipes: monthlyRecipes,
+        monthlyBloggerPosts: monthlyBloggerPosts,
       );
 
       isLoading = false;
@@ -68,5 +85,5 @@ class AdminDashboardService extends ChangeNotifier {
       notifyListeners();
       debugPrint("Dashboard Error: $e");
     }
-  } 
+  }
 }

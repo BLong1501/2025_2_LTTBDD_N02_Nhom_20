@@ -3,7 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/user_model.dart';
 
 class AdminUserProvider extends ChangeNotifier {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseFirestore _firestore =
+      FirebaseFirestore.instance;
 
   List<UserModel> _users = [];
   bool _isLoading = false;
@@ -11,17 +12,20 @@ class AdminUserProvider extends ChangeNotifier {
   List<UserModel> get users => _users;
   bool get isLoading => _isLoading;
 
-  // Load toàn bộ user từ Firestore
+  /// LOAD USERS
   Future<void> fetchUsers() async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      final snapshot = await _firestore.collection('users').get();
+      final snapshot =
+          await _firestore.collection('users').get();
 
-      _users = snapshot.docs
-          .map((doc) => UserModel.fromMap(doc.data()))
-          .toList();
+      _users = snapshot.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id; // thêm doc id
+        return UserModel.fromMap(data);
+      }).toList();
     } catch (e) {
       debugPrint("Fetch users error: $e");
     }
@@ -30,7 +34,7 @@ class AdminUserProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Khóa / Mở khóa user
+  /// LOCK / UNLOCK USER
   Future<void> toggleLockUser(UserModel user) async {
     final updatedUser =
         user.copyWith(isLocked: !user.isLocked);
@@ -49,13 +53,15 @@ class AdminUserProvider extends ChangeNotifier {
     }
   }
 
-  // Đổi role user
+  /// CHANGE ROLE
   Future<void> changeUserRole(UserModel user) async {
-    final newRole = user.role == UserRole.admin
-        ? UserRole.blogger
-        : UserRole.admin;
+    final newRole =
+        user.role == UserRole.admin
+            ? UserRole.blogger
+            : UserRole.admin;
 
-    final updatedUser = user.copyWith(role: newRole);
+    final updatedUser =
+        user.copyWith(role: newRole);
 
     await _firestore
         .collection('users')
