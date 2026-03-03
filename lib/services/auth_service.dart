@@ -85,8 +85,21 @@ class AuthService {
       );
 
       // Lấy thông tin chi tiết
-      DocumentSnapshot doc = await _firestore.collection('users').doc(cred.user!.uid).get();
-      return UserModel.fromMap(doc.data() as Map<String, dynamic>);
+      DocumentSnapshot doc = await _firestore
+          .collection('users')
+          .doc(cred.user!.uid)
+          .get();
+
+      final data = doc.data() as Map<String, dynamic>;
+
+      // KIỂM TRA TÀI KHOẢN BỊ KHÓA
+      if (data['isLocked'] == true) {
+        await _auth.signOut(); // Đăng xuất ngay
+        return "Tài khoản đã bị khóa.";
+      }
+
+      // Nếu không bị khóa thì trả về user
+      return UserModel.fromMap(data);
 
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') return "Tài khoản không tồn tại.";

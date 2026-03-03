@@ -76,4 +76,35 @@ class AdminUserProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+  Future<Map<String, dynamic>> getBloggerStats(String userId) async {
+    final foodsSnapshot = await _firestore
+        .collection('foods')
+        .where('authorId', isEqualTo: userId)
+        .get();
+
+    final followersSnapshot = await _firestore
+        .collection('followers')
+        .where('userId', isEqualTo: userId)
+        .get();
+
+    return {
+      'totalFoods': foodsSnapshot.docs.length,
+      'totalFollowers': followersSnapshot.docs.length,
+    };
+  }
+
+  /// DELETE USER
+  Future<void> deleteUser(String userId) async {
+    await _firestore.collection('users').doc(userId).delete();
+    _users.removeWhere((u) => u.id == userId);
+    notifyListeners();
+  }
+  Future<List<Map<String, dynamic>>> getBloggerFoods(String userId) async {
+    final snapshot = await _firestore
+        .collection('foods')
+        .where('authorId', isEqualTo: userId)
+        .get();
+
+    return snapshot.docs.map((e) => e.data()).toList();
+  }
 }
