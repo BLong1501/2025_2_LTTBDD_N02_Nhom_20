@@ -39,7 +39,6 @@ class BloggerDetailScreen extends StatelessWidget {
 
           return Column(
             children: [
-
               /// ================= HEADER =================
               Container(
                 padding: const EdgeInsets.all(16),
@@ -57,10 +56,8 @@ class BloggerDetailScreen extends StatelessWidget {
                     Text(user.email),
                     Text("SĐT: ${user.phoneNumber}"),
                     const SizedBox(height: 12),
-
                     Row(
-                      mainAxisAlignment:
-                          MainAxisAlignment.spaceAround,
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                         _buildStat(
                           "Bài đăng",
@@ -83,7 +80,6 @@ class BloggerDetailScreen extends StatelessWidget {
                 child: FutureBuilder<List<Map<String, dynamic>>>(
                   future: provider.getBloggerFoods(user.id),
                   builder: (context, foodSnapshot) {
-
                     if (!foodSnapshot.hasData) {
                       return const Center(
                         child: CircularProgressIndicator(),
@@ -100,11 +96,12 @@ class BloggerDetailScreen extends StatelessWidget {
 
                     /// Convert Map -> FoodModel
                     final foods = foodMaps.map((map) {
-                        return FoodModel.fromMap(
-                          map,
-                          map['id'] ?? '',
-                        );
-                      }).toList();
+                      return FoodModel.fromMap(
+                        map,
+                        map['id'] ?? '',
+                      );
+                    }).toList();
+
                     return ListView.builder(
                       itemCount: foods.length,
                       itemBuilder: (context, index) {
@@ -113,34 +110,41 @@ class BloggerDetailScreen extends StatelessWidget {
                         return Card(
                           margin: const EdgeInsets.all(12),
                           child: ListTile(
+                            // --- ĐÃ SỬA LỖI HÌNH ẢNH Ở ĐÂY ---
                             leading: ClipRRect(
-                              borderRadius:
-                                  BorderRadius.circular(8),
-                              child: Image.network(
-                                food.imageUrl,
+                              borderRadius: BorderRadius.circular(8),
+                              child: Container(
                                 width: 60,
                                 height: 60,
-                                fit: BoxFit.cover,
+                                color: Colors.grey[200], // Nền xám lót dưới
+                                child: food.imageUrl.isNotEmpty
+                                    ? Image.network(
+                                        food.imageUrl,
+                                        fit: BoxFit.cover,
+                                        // Tấm khiên chống văng app khi link ảnh chết
+                                        errorBuilder: (context, error, stackTrace) => const Icon(
+                                          Icons.broken_image,
+                                          color: Colors.grey,
+                                        ),
+                                      )
+                                    : const Icon(
+                                        Icons.fastfood,
+                                        color: Colors.deepPurple,
+                                      ),
                               ),
                             ),
                             title: Text(food.title),
                             subtitle: Text(
-                              food.isApproved
-                                  ? "Đã duyệt"
-                                  : "Chờ duyệt",
+                              food.isApproved ? "Đã duyệt" : "Chờ duyệt",
                               style: TextStyle(
-                                color: food.isApproved
-                                    ? Colors.green
-                                    : Colors.orange,
+                                color: food.isApproved ? Colors.green : Colors.orange,
                               ),
                             ),
                             onTap: () {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (_) =>
-                                      AdminFoodDetailScreen(
-                                          foodId: food.id),
+                                  builder: (_) => AdminFoodDetailScreen(foodId: food.id),
                                 ),
                               );
                             },
