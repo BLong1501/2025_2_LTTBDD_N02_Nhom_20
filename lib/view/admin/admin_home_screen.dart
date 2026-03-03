@@ -40,44 +40,6 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         centerTitle: true,
         backgroundColor: Colors.deepPurple,
         actions: [
-          /// Notification
-          Stack(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.notifications_none),
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: const Text("Thông báo"),
-                      content:
-                          const Text("Hiện chưa có thông báo mới."),
-                      actions: [
-                        TextButton(
-                          onPressed: () =>
-                              Navigator.pop(context),
-                          child: const Text("Đóng"),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-              Positioned(
-                right: 10,
-                top: 10,
-                child: Container(
-                  width: 8,
-                  height: 8,
-                  decoration: const BoxDecoration(
-                    color: Colors.red,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
-            ],
-          ),
-
           /// Logout
           IconButton(
             icon: const Icon(Icons.logout),
