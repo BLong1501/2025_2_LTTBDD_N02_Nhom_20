@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/user_model.dart';
+import '../models/food_model.dart';
 
 class AdminUserProvider extends ChangeNotifier {
   final FirebaseFirestore _firestore =
@@ -95,16 +96,22 @@ class AdminUserProvider extends ChangeNotifier {
 
   /// DELETE USER
   Future<void> deleteUser(String userId) async {
-    await _firestore.collection('users').doc(userId).delete();
-    _users.removeWhere((u) => u.id == userId);
-    notifyListeners();
-  }
-  Future<List<Map<String, dynamic>>> getBloggerFoods(String userId) async {
+      await _firestore.collection('users').doc(userId).delete();
+      _users.removeWhere((u) => u.id == userId);
+      notifyListeners();
+    }
+    Future<List<Map<String, dynamic>>> getBloggerFoods(String userId) async {
     final snapshot = await _firestore
         .collection('foods')
         .where('authorId', isEqualTo: userId)
         .get();
 
-    return snapshot.docs.map((e) => e.data()).toList();
+    return snapshot.docs.map((doc) {
+      final data = doc.data();
+      return {
+        ...data,
+        'id': doc.id, // thêm id ngay từ provider
+      };
+    }).toList();
   }
 }

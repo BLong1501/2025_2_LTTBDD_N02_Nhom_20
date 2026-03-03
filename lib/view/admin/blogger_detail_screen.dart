@@ -1,12 +1,17 @@
+import 'package:btl_ltdd/view/admin/admin_food_detail_screen.dart';
 import 'package:flutter/material.dart';
 import '../../models/user_model.dart';
+import '../../models/food_model.dart';
 import '../../providers/admin_user_provider.dart';
 import 'package:provider/provider.dart';
 
 class BloggerDetailScreen extends StatelessWidget {
   final UserModel user;
 
-  const BloggerDetailScreen({super.key, required this.user});
+  const BloggerDetailScreen({
+    super.key,
+    required this.user,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -14,73 +19,157 @@ class BloggerDetailScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Chi tiết Blogger",
-            style: TextStyle(color: Colors.white)),
+        title: const Text(
+          "Chi tiết Blogger",
+          style: TextStyle(color: Colors.white),
+        ),
         backgroundColor: Colors.deepPurple,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: FutureBuilder(
+      body: FutureBuilder<Map<String, dynamic>>(
         future: provider.getBloggerStats(user.id),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
           }
 
-          final stats = snapshot.data as Map<String, dynamic>;
+          final stats = snapshot.data!;
 
-          return Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text("Username: ${user.username}",
-                    style: const TextStyle(fontSize: 18)),
-                Text("Email: ${user.email}"),
-                Text("SĐT: ${user.phoneNumber}"),
-                const SizedBox(height: 20),
+          return Column(
+            children: [
 
-                Text("Số công thức: ${stats['totalFoods']}"),
-                Text("Số followers: ${stats['totalFollowers']}"),
+              /// ================= HEADER =================
+              Container(
+                padding: const EdgeInsets.all(16),
+                color: Colors.white,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      user.username,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(user.email),
+                    Text("SĐT: ${user.phoneNumber}"),
+                    const SizedBox(height: 12),
 
-                const SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment:
+                          MainAxisAlignment.spaceAround,
+                      children: [
+                        _buildStat(
+                          "Bài đăng",
+                          stats['totalFoods'].toString(),
+                        ),
+                        _buildStat(
+                          "Followers",
+                          stats['totalFollowers'].toString(),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
 
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red),
-                  onPressed: () {
-                    provider.deleteUser(user.id);
-                    Navigator.pop(context);
-                  },
-                  child: const Text("Xóa tài khoản"),
-                  ),
-                Expanded(
-                  child: FutureBuilder(
-                    future: provider.getBloggerFoods(user.id),
-                    builder: (context, snapshot) {
-                      if (!snapshot.hasData) {
-                        return const CircularProgressIndicator();
-                      }
+              const Divider(),
 
-                      final foods = snapshot.data as List;
+              /// ================= LIST FOOD =================
+              Expanded(
+                child: FutureBuilder<List<Map<String, dynamic>>>(
+                  future: provider.getBloggerFoods(user.id),
+                  builder: (context, foodSnapshot) {
 
-                      return ListView.builder(
-                        itemCount: foods.length,
-                        itemBuilder: (context, index) {
-                          return ListTile(
-                            title: Text(foods[index]['title']),
-                          );
-                        },
+                    if (!foodSnapshot.hasData) {
+                      return const Center(
+                        child: CircularProgressIndicator(),
                       );
-                    },
-                  ),
-                )
-              ],
-              
-            ),
+                    }
+
+                    final foodMaps = foodSnapshot.data!;
+
+                    if (foodMaps.isEmpty) {
+                      return const Center(
+                        child: Text("Chưa có bài đăng nào"),
+                      );
+                    }
+
+                    /// Convert Map -> FoodModel
+                    final foods = foodMaps.map((map) {
+                        return FoodModel.fromMap(
+                          map,
+                          map['id'] ?? '',
+                        );
+                      }).toList();
+                    return ListView.builder(
+                      itemCount: foods.length,
+                      itemBuilder: (context, index) {
+                        final food = foods[index];
+
+                        return Card(
+                          margin: const EdgeInsets.all(12),
+                          child: ListTile(
+                            leading: ClipRRect(
+                              borderRadius:
+                                  BorderRadius.circular(8),
+                              child: Image.network(
+                                food.imageUrl,
+                                width: 60,
+                                height: 60,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                            title: Text(food.title),
+                            subtitle: Text(
+                              food.isApproved
+                                  ? "Đã duyệt"
+                                  : "Chờ duyệt",
+                              style: TextStyle(
+                                color: food.isApproved
+                                    ? Colors.green
+                                    : Colors.orange,
+                              ),
+                            ),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      AdminFoodDetailScreen(
+                                          foodId: food.id),
+                                ),
+                              );
+                            },
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
           );
         },
       ),
     );
   }
-  
+
+  Widget _buildStat(String title, String value) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        Text(title),
+      ],
+    );
+  }
 }

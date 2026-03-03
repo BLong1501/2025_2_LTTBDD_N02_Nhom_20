@@ -105,24 +105,36 @@ class AdminFoodProvider extends ChangeNotifier {
   }
   Future<void> toggleFeatured(FoodModel food) async {
 
-  final updated =
-      food.copyWith(
-        isFeatured: !food.isFeatured,
-      );
+    final updated =
+        food.copyWith(
+          isFeatured: !food.isFeatured,
+        );
 
-  await _firestore
-      .collection('foods')
-      .doc(food.id)
-      .update({
-    'isFeatured': updated.isFeatured,
-  });
+    await _firestore
+        .collection('foods')
+        .doc(food.id)
+        .update({
+      'isFeatured': updated.isFeatured,
+    });
 
-  final index =
-      _foods.indexWhere((f) => f.id == food.id);
+    final index =
+        _foods.indexWhere((f) => f.id == food.id);
 
-  if (index != -1) {
-    _foods[index] = updated;
-    notifyListeners();
+    if (index != -1) {
+      _foods[index] = updated;
+      notifyListeners();
+    }
   }
-}
+  /// STREAM CHI TIẾT FOOD REALTIME
+  Stream<FoodModel?> streamFoodById(String foodId) {
+    return _firestore
+        .collection('foods')
+        .doc(foodId)
+        .snapshots()
+        .map((doc) {
+      if (!doc.exists) return null;
+
+      return FoodModel.fromMap(doc.data()!, doc.id);
+    });
+  }
 }
