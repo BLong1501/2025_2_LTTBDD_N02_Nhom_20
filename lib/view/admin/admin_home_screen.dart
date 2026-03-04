@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -8,6 +9,7 @@ import '../../models/dashboard_model.dart';
 import 'manage_users_screen.dart';
 import 'manage_foods_screen.dart';
 import '../auth/login_screen.dart';
+import 'admin_profile_screen.dart';
 
 class AdminHomeScreen extends StatefulWidget {
   const AdminHomeScreen({Key? key}) : super(key: key);
@@ -36,7 +38,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
 
       /// ================= APP BAR =================
       appBar: AppBar(
-        title: const Text("Admin Dashboard"),
+        title: Text("admin_dashboard".tr()),
         centerTitle: true,
         backgroundColor: Colors.deepPurple,
         actions: [
@@ -63,30 +65,51 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
           _buildDashboard(dashboard),
           const ManageUsersScreen(),
           const ManageFoodsScreen(),
+          const AdminProfileScreen(),
         ],
       ),
 
       /// ================= BOTTOM NAV =================
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        selectedItemColor: Colors.deepPurple,
-        onTap: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
-        items: const [
+      currentIndex: _selectedIndex,
+
+      backgroundColor: Colors.white,
+
+      selectedItemColor: Colors.deepPurple,
+      unselectedItemColor: Colors.black54,
+
+      selectedLabelStyle: const TextStyle(
+        color: Colors.deepPurple,
+        fontWeight: FontWeight.bold,
+      ),
+
+      unselectedLabelStyle: const TextStyle(
+        color: Colors.black54,
+      ),
+
+      type: BottomNavigationBarType.fixed,
+
+      onTap: (index) {
+        setState(() {
+          _selectedIndex = index;
+        });
+      },
+        items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard),
-            label: "Dashboard",
+            icon: const Icon(Icons.dashboard),
+            label: "Admin_Dashboard".tr(),
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.people),
-            label: "Users",
+            icon: const Icon(Icons.people),
+            label: "Users".tr(),
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.restaurant_menu),
-            label: "Công thức",
+            icon: const Icon(Icons.restaurant_menu),
+            label: "Foods".tr(),
+          ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.person),
+            label: "Admin Profile".tr(),
           ),
         ],
       ),
@@ -126,8 +149,8 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         mainAxisAlignment:
             MainAxisAlignment.spaceBetween,
         children: [
-          const Text(
-            "Tổng quan hệ thống",
+           Text(
+            "System Overview".tr(),
             style: TextStyle(
                 color: Colors.white,
                 fontSize: 18,
@@ -154,19 +177,19 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
       mainAxisSpacing: 12,
       childAspectRatio: 1.3,
       children: [
-        _statCard("Total Users",
+        _statCard("Total Users".tr(),
             model?.totalUsers ?? 0,
             Icons.people,
             Colors.blue),
-        _statCard("Total Foods",
+        _statCard("Total Foods".tr(),
             model?.totalFoods ?? 0,
             Icons.restaurant,
             Colors.green),
-        _statCard("Pending Approval",
+        _statCard("Pending Approval".tr(),
             model?.pendingFoods ?? 0,
             Icons.hourglass_empty,
             Colors.orange),
-        _statCard("Featured Foods",
+        _statCard("Featured Foods".tr(),
             model?.featuredFoods ?? 0,
             Icons.star,
             Colors.purple),
@@ -218,8 +241,8 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
       crossAxisAlignment:
           CrossAxisAlignment.start,
       children: [
-        const Text(
-          "Thống kê hệ thống",
+        Text(
+          "System Statistics".tr(),
           style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold),
@@ -241,21 +264,21 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
             child: DropdownButton<String>(
               value: _selectedStatistic,
               isExpanded: true,
-              items: const [
+              items: [
                 DropdownMenuItem(
                   value: "users",
                   child: Text(
-                      "Người dùng đăng ký"),
+                      "users_registered".tr()),
                 ),
                 DropdownMenuItem(
                   value: "recipes",
                   child: Text(
-                      "Công thức được cập nhật"),
+                      "recipes_updated".tr()),
                 ),
                 DropdownMenuItem(
                   value: "blogger",
                   child: Text(
-                      "Bài viết blogger chia sẻ"),
+                      "blogger_posts".tr()),
                 ),
               ],
               onChanged: (value) {

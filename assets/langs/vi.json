@@ -71,5 +71,24 @@
   "share_publicly": "Chia sẻ công khai?",
   "personal_note": "Ghi chú cá nhân",
   "recipe_list": "Danh sách công thức",
-  "your_meal_plans": "Kế hoạch bữa ăn của bạn"
+  "your_meal_plans": "Kế hoạch bữa ăn của bạn",
+
+  "admin_dashboard": "Bảng điều khiển quản trị",
+  "dashboard": "Bảng điều khiển",
+  "users": "Người dùng",
+  "foods": "Công thức",
+  "approvals": "Phê duyệt",
+  "featured": "Nổi bật",
+
+  "system_overview": "Tổng quan hệ thống",
+  "system_statistics": "Thống kê hệ thống",
+
+  "total_users": "Tổng số người dùng",
+  "total_foods": "Tổng số công thức",
+  "pending_approvals": "Đang chờ phê duyệt",
+  "featured_recipes": "Công thức nổi bật",
+
+  "user_registrations": "Đăng ký người dùng",
+  "recipe_updates": "Cập nhật công thức",
+  "blog_posts_shared": "Bài viết blogger chia sẻ"
 }
