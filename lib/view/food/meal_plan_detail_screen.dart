@@ -1,7 +1,10 @@
+import 'package:btl_ltdd/view/profile/public_profile.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:btl_ltdd/view/food/edit_food_screen.dart'; 
+// Nhớ Import màn hình Public Profile của bạn vào đây
+// import 'package:btl_ltdd/view/profile/public_profile_screen.dart'; 
 import '../../models/food_model.dart';
 
 class MealDetailScreen extends StatefulWidget {
@@ -16,14 +19,13 @@ class MealDetailScreen extends StatefulWidget {
 class _MealDetailScreenState extends State<MealDetailScreen> {
   int _currentRating = 5; 
   final TextEditingController _commentController = TextEditingController();
-  final FocusNode _commentFocusNode = FocusNode(); // FocusNode để tự động bật bàn phím
+  final FocusNode _commentFocusNode = FocusNode(); 
   bool _isSubmitting = false;
   bool _hasRated = false;
   double _myRating = 0;
 
-  // --- BIẾN TRẠNG THÁI TRẢ LỜI BÌNH LUẬN ---
-  String? _replyingToCommentId; // ID của bình luận gốc đang được trả lời
-  String? _replyingToUsername;  // Tên người đang được trả lời
+  String? _replyingToCommentId; 
+  String? _replyingToUsername;  
 
   @override
   void initState() {
@@ -50,7 +52,6 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
     }
   }
 
-  // --- HÀM GỬI BÌNH LUẬN LÊN FIREBASE ---
   Future<void> _submitInteraction() async {
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser == null) {
@@ -70,7 +71,6 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
     try {
       final foodRef = FirebaseFirestore.instance.collection('foods').doc(widget.food.id);
 
-      // 1. Lưu điểm sao nếu chưa đánh giá
       if (!_hasRated) {
         await foodRef.collection('ratings').doc(currentUser.uid).set({
           'userId': currentUser.uid,
@@ -93,14 +93,13 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
         });
       }
 
-      // 2. Lưu bình luận (Có hỗ trợ Parent ID để phân cấp)
       if (commentText.isNotEmpty) {
         await foodRef.collection('comments').add({
           'userId': currentUser.uid,
           'userEmail': currentUser.email ?? 'User',
           'comment': commentText,
           'createdAt': FieldValue.serverTimestamp(),
-          'parentId': _replyingToCommentId, // Nếu là trả lời thì sẽ có ID, nếu bình luận gốc thì null
+          'parentId': _replyingToCommentId, 
           'likedBy': [],
         });
         
@@ -121,7 +120,6 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
     }
   }
 
-  // --- HÀM XÓA CÔNG THỨC ---
   void _confirmDelete(BuildContext context) {
     showDialog(
       context: context,
@@ -272,6 +270,10 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // --- MỚI: WIDGET TÁC GIẢ BÀI VIẾT (ẨN NẾU LÀ CỦA ADMIN) ---
+                    if (widget.food.authorId != 'admin_id') // Điều kiện kiểm tra xem có phải do admin tạo không
+                      _buildAuthorInfo(widget.food.authorId),
+
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -316,6 +318,62 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
     );
   }
 
+  // --- MỚI: HÀM LẤY VÀ HIỂN THỊ THÔNG TIN TÁC GIẢ TỪ BẢNG USERS ---
+  Widget _buildAuthorInfo(String authorId) {
+    return FutureBuilder<DocumentSnapshot>(
+      future: FirebaseFirestore.instance.collection('users').doc(authorId).get(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData || !snapshot.data!.exists) {
+          return const SizedBox.shrink(); // Đang tải hoặc không có user thì ẩn luôn
+        }
+
+        final userData = snapshot.data!.data() as Map<String, dynamic>;
+        final String authorName = userData['name'] ?? userData['email']?.split('@')[0] ?? 'Người dùng';
+        final String? avatarUrl = userData['avatarUrl'];
+
+        return InkWell(
+          onTap: () {
+            // Chuyển sang trang Public Profile khi bấm vào
+            Navigator.push(context, MaterialPageRoute(builder: (_) => PublicProfileScreen(authorId: authorId)));
+            // Bạn nhớ bỏ comment dòng trên và import đúng đường dẫn khi file đã sẵn sàng
+          },
+          child: Container(
+            margin: const EdgeInsets.only(bottom: 25),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              borderRadius: BorderRadius.circular(15),
+              border: Border.all(color: Colors.grey.shade200),
+            ),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 24,
+                  backgroundColor: Colors.orange.shade100,
+                  backgroundImage: avatarUrl != null && avatarUrl.isNotEmpty ? NetworkImage(avatarUrl) : null,
+                  child: avatarUrl == null || avatarUrl.isEmpty
+                      ? Text(authorName[0].toUpperCase(), style: const TextStyle(color: Colors.deepOrange, fontWeight: FontWeight.bold, fontSize: 18))
+                      : null,
+                ),
+                const SizedBox(width: 15),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text("Được tạo bởi", style: TextStyle(color: Colors.grey, fontSize: 12)),
+                      Text(authorName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.chevron_right, color: Colors.grey),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   // --- FORM NHẬP BÌNH LUẬN ---
   Widget _buildReviewInputForm() {
     return Container(
@@ -348,7 +406,6 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
             const SizedBox(height: 15),
           ],
 
-          // Nếu đang chọn "Trả lời", hiển thị thanh thông báo nhỏ
           if (_replyingToCommentId != null)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
@@ -369,7 +426,7 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
 
           TextField(
             controller: _commentController,
-            focusNode: _commentFocusNode, // Gắn FocusNode vào đây
+            focusNode: _commentFocusNode, 
             maxLines: 3,
             decoration: InputDecoration(
               hintText: _replyingToCommentId != null ? "Viết phản hồi..." : "Nhập bình luận của bạn...",
@@ -393,14 +450,14 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
     );
   }
 
-  // --- XỬ LÝ LẤY VÀ HIỂN THỊ DANH SÁCH BÌNH LUẬN THEO CẤP BẬC ---
+  // --- XỬ LÝ LẤY VÀ HIỂN THỊ DANH SÁCH BÌNH LUẬN ---
   Widget _buildCommentsList() {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection('foods')
           .doc(widget.food.id)
           .collection('comments')
-          .orderBy('createdAt', descending: true) // Mới nhất lên đầu
+          .orderBy('createdAt', descending: true) 
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
@@ -409,7 +466,6 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
         final allComments = snapshot.data!.docs;
         final currentUserId = FirebaseAuth.instance.currentUser?.uid;
 
-        // Tách bình luận gốc (không có parentId) và các câu trả lời
         final parentComments = allComments.where((c) => (c.data() as Map<String, dynamic>)['parentId'] == null).toList();
 
         return ListView.builder(
@@ -419,25 +475,20 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
           itemCount: parentComments.length,
           itemBuilder: (context, index) {
             final parentDoc = parentComments[index];
-            
-            // Tìm tất cả các Reply của bình luận này (đảo ngược để hiển thị reply cũ nhất ở trên, giống Facebook)
             final replies = allComments.where((c) => (c.data() as Map<String, dynamic>)['parentId'] == parentDoc.id).toList().reversed.toList();
 
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Vẽ bình luận cha
                 _buildSingleCommentWidget(parentDoc, currentUserId, isReply: false, parentIdToReply: parentDoc.id),
-                
-                // Nếu có trả lời, vẽ chúng lùi vào trong
                 if (replies.isNotEmpty)
                   Padding(
-                    padding: const EdgeInsets.only(left: 45.0, top: 4.0), // Lùi vào trong
+                    padding: const EdgeInsets.only(left: 45.0, top: 4.0), 
                     child: Column(
                       children: replies.map((r) => _buildSingleCommentWidget(r, currentUserId, isReply: true, parentIdToReply: parentDoc.id)).toList(),
                     ),
                   ),
-                const Divider(height: 30, color: Colors.transparent), // Khoảng cách giữa các cụm bình luận
+                const Divider(height: 30, color: Colors.transparent), 
               ],
             );
           },
@@ -446,7 +497,7 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
     );
   }
 
-  // --- WIDGET VẼ 1 BONG BÓNG BÌNH LUẬN (Dùng chung cho cả Cha và Con) ---
+  // --- WIDGET VẼ BONG BÓNG CHAT ---
   Widget _buildSingleCommentWidget(DocumentSnapshot commentDoc, String? currentUserId, {required bool isReply, required String parentIdToReply}) {
     final data = commentDoc.data() as Map<String, dynamic>;
     final commentId = commentDoc.id;
@@ -456,7 +507,6 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
     final Timestamp? timestamp = data['createdAt'] as Timestamp?;
     final dateStr = timestamp != null ? "${timestamp.toDate().day}/${timestamp.toDate().month}/${timestamp.toDate().year}" : "Vừa xong";
     
-    // Logic Like
     final List<String> likedBy = List<String>.from(data['likedBy'] ?? []);
     final bool isLikedByMe = currentUserId != null && likedBy.contains(currentUserId);
     final bool isMyComment = currentUserId == userId;
@@ -466,7 +516,6 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Avatar (Nếu là Reply thì avatar nhỏ hơn 1 chút)
           CircleAvatar(
             radius: isReply ? 16 : 20,
             backgroundColor: isReply ? Colors.grey.shade200 : Colors.orange.shade100, 
@@ -478,7 +527,6 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Khung Bong Bóng Chat (Nhấn giữ để sửa/xóa)
                 GestureDetector(
                   onLongPress: isMyComment ? () => _showCommentOptions(commentId, commentText) : null,
                   child: Container(
@@ -497,17 +545,13 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
                     ),
                   ),
                 ),
-                
                 const SizedBox(height: 6),
-                
-                // Thanh công cụ: Thời gian • Like (Có Icon) • Trả lời
                 Row(
                   children: [
                     const SizedBox(width: 8),
                     Text(dateStr, style: TextStyle(color: Colors.grey.shade500, fontSize: 12, fontWeight: FontWeight.w500)),
                     const SizedBox(width: 15),
                     
-                    // NÚT LIKE BẰNG ICON 👍
                     InkWell(
                       onTap: () => _toggleCommentLike(commentId, likedBy, currentUserId),
                       child: Row(
@@ -520,25 +564,19 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
                           const SizedBox(width: 4),
                           Text(
                             likedBy.isNotEmpty ? "${likedBy.length}" : "Thích", 
-                            style: TextStyle(
-                              color: isLikedByMe ? Colors.blue : Colors.grey.shade600, 
-                              fontSize: 12, 
-                              fontWeight: isLikedByMe ? FontWeight.bold : FontWeight.w600
-                            ),
+                            style: TextStyle(color: isLikedByMe ? Colors.blue : Colors.grey.shade600, fontSize: 12, fontWeight: isLikedByMe ? FontWeight.bold : FontWeight.w600),
                           ),
                         ],
                       ),
                     ),
                     const SizedBox(width: 15),
                     
-                    // NÚT TRẢ LỜI
                     InkWell(
                       onTap: () {
                         setState(() {
-                          _replyingToCommentId = parentIdToReply; // Luôn trỏ về ID của comment Cha để không bị lùi sâu quá 1 cấp
+                          _replyingToCommentId = parentIdToReply; 
                           _replyingToUsername = userEmail.split('@')[0];
                         });
-                        // Nhấn nút thì tự động gõ @username và bật bàn phím lên
                         _commentController.text = "@${userEmail.split('@')[0]} ";
                         FocusScope.of(context).requestFocus(_commentFocusNode);
                       },
@@ -554,7 +592,6 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
     );
   }
 
-  // --- LOGIC THÍCH / BỎ THÍCH BÌNH LUẬN ---
   Future<void> _toggleCommentLike(String commentId, List<String> currentLikes, String? uid) async {
     if (uid == null) return;
     final commentRef = FirebaseFirestore.instance.collection('foods').doc(widget.food.id).collection('comments').doc(commentId);
@@ -565,7 +602,6 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
     }
   }
 
-  // --- MENU CHỈNH SỬA / XÓA BÌNH LUẬN ---
   void _showCommentOptions(String commentId, String currentText) {
     showModalBottomSheet(
       context: context,
@@ -626,7 +662,6 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
     );
   }
 
-  // CÁC HÀM XÂY DỰNG GIAO DIỆN PHỤ (THÔNG TIN MÓN ĂN) GIỮ NGUYÊN HOÀN TOÀN...
   Widget _buildStatItem(IconData icon, String value, String label, Color bgColor, Color iconColor) {
     return Container(
       width: 100, padding: const EdgeInsets.symmetric(vertical: 12),
