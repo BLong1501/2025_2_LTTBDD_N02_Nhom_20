@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -24,7 +25,7 @@ class _AdminAddRecipeScreenState extends State<AdminAddRecipeScreen> {
   final TextEditingController _ingredientsController = TextEditingController();
   final TextEditingController _instructionsController = TextEditingController();
 
-  String _selectedDifficulty = 'Trung bình'; // Mặc định
+  String _selectedDifficulty = 'medium'.tr(); // Mặc định
   File? _imageFile;
   bool _isLoading = false;
 
@@ -106,7 +107,7 @@ class _AdminAddRecipeScreenState extends State<AdminAddRecipeScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text("Thêm Công Thức Mới"),
+        title:  Text("add_recipe".tr()),
         backgroundColor: Colors.orange,
         foregroundColor: Colors.white,
       ),
@@ -136,12 +137,12 @@ class _AdminAddRecipeScreenState extends State<AdminAddRecipeScreen> {
                                   borderRadius: BorderRadius.circular(15),
                                   child: Image.file(_imageFile!, fit: BoxFit.cover),
                                 )
-                              : const Column(
+                              :  Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Icon(Icons.add_a_photo, size: 50, color: Colors.grey),
                                     SizedBox(height: 10),
-                                    Text("Bấm để tải ảnh lên", style: TextStyle(color: Colors.grey)),
+                                    Text("select_image".tr(), style: TextStyle(color: Colors.grey)),
                                   ],
                                 ),
                         ),
@@ -150,18 +151,18 @@ class _AdminAddRecipeScreenState extends State<AdminAddRecipeScreen> {
                     const SizedBox(height: 20),
 
                     // --- CÁC TRƯỜNG NHẬP LIỆU ---
-                    _buildTextField("Tên món ăn", _titleController, "VD: Sườn xào chua ngọt", maxLines: 1),
+                    _buildTextField("food_name".tr(), _titleController, "VD: Sườn xào chua ngọt", maxLines: 1),
                     
                     Row(
                       children: [
-                        Expanded(child: _buildTextField("Thời gian", _timeController, "VD: 30 phút", maxLines: 1)),
+                        Expanded(child: _buildTextField("time".tr(), _timeController, "VD: 30 phút", maxLines: 1)),
                         const SizedBox(width: 15),
-                        Expanded(child: _buildTextField("Khẩu phần", _servingsController, "VD: 2 người", maxLines: 1)),
+                        Expanded(child: _buildTextField("servings".tr(), _servingsController, "VD: 2 người", maxLines: 1)),
                       ],
                     ),
 
                     const SizedBox(height: 15),
-                    const Text("Độ khó", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                     Text("level".tr(), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                     const SizedBox(height: 5),
                     DropdownButtonFormField<String>(
                       value: _selectedDifficulty,
@@ -169,7 +170,7 @@ class _AdminAddRecipeScreenState extends State<AdminAddRecipeScreen> {
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                         contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
                       ),
-                      items: ['Dễ', 'Trung bình', 'Khó'].map((String value) {
+                      items: ['easy'.tr(), 'medium'.tr(), 'hard'.tr()].map((String value) {
                         return DropdownMenuItem<String>(value: value, child: Text(value));
                       }).toList(),
                       onChanged: (newValue) {
@@ -178,13 +179,13 @@ class _AdminAddRecipeScreenState extends State<AdminAddRecipeScreen> {
                     ),
 
                     const SizedBox(height: 15),
-                    _buildTextField("Danh mục (Thể loại)", _categoryController, "VD: Món mặn, Tráng miệng...", maxLines: 1),
+                    _buildTextField("category_and_tags".tr(), _categoryController, "VD: Món mặn, Tráng miệng...", maxLines: 1),
                     
                     const SizedBox(height: 15),
-                    _buildTextField("Nguyên liệu (Cách nhau bằng dấu phẩy)", _ingredientsController, "VD: 500g sườn non, 2 quả cà chua, 1 củ tỏi...", maxLines: 3),
+                    _buildTextField("ingredients".tr(), _ingredientsController, "VD: 500g sườn non, 2 quả cà chua, 1 củ tỏi...", maxLines: 3),
                     
                     const SizedBox(height: 15),
-                    _buildTextField("Hướng dẫn cách làm", _instructionsController, "Bước 1: Rửa sạch sườn...\nBước 2: Chiên sườn...", maxLines: 6),
+                    _buildTextField("instructions".tr(), _instructionsController, "Bước 1: Rửa sạch sườn...\nBước 2: Chiên sườn...", maxLines: 6),
 
                     const SizedBox(height: 30),
 
@@ -198,7 +199,7 @@ class _AdminAddRecipeScreenState extends State<AdminAddRecipeScreen> {
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                         ),
                         onPressed: _saveRecipe,
-                        child: const Text("LƯU CÔNG THỨC", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                        child:  Text("save".tr(), style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
                       ),
                     ),
                     const SizedBox(height: 40),

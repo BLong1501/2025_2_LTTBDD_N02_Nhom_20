@@ -1,4 +1,5 @@
 import 'package:btl_ltdd/view/admin/admin_food_detail_screen.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import '../../models/user_model.dart';
 import '../../models/food_model.dart';
@@ -19,8 +20,8 @@ class BloggerDetailScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          "Chi tiết Blogger",
+        title:  Text(
+          "blogger_detail".tr(),
           style: TextStyle(color: Colors.white),
         ),
         backgroundColor: Colors.deepPurple,
@@ -54,17 +55,17 @@ class BloggerDetailScreen extends StatelessWidget {
                       ),
                     ),
                     Text(user.email),
-                    Text("SĐT: ${user.phoneNumber}"),
+                    Text("phone_number".tr() + ": ${user.phoneNumber}"),
                     const SizedBox(height: 12),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                         _buildStat(
-                          "Bài đăng",
+                          "post".tr(),
                           stats['totalFoods'].toString(),
                         ),
                         _buildStat(
-                          "Followers",
+                          "follower".tr(),
                           stats['totalFollowers'].toString(),
                         ),
                       ],
@@ -90,7 +91,7 @@ class BloggerDetailScreen extends StatelessWidget {
 
                     if (foodMaps.isEmpty) {
                       return const Center(
-                        child: Text("Chưa có bài đăng nào"),
+                        child: Text("nothing"),
                       );
                     }
 

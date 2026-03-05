@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
@@ -27,15 +28,15 @@ class _EditFoodScreenState extends State<EditFoodScreen> {
   // Variables
   bool _isLoading = false;
   bool _isShared = true;
-  String _selectedCategory = 'Món chính';
+  String _selectedCategory = 'main_dish'.tr();
   double _servings = 2.0;
-  String _selectedDifficulty = 'Dễ';
+  String _selectedDifficulty = 'easy'.tr();
   
   final ImagePicker _picker = ImagePicker();
   List<File> _selectedImages = []; // Chứa ảnh mới (nếu người dùng chọn lại)
 
-  final List<String> _categories = ['Món chính', 'Ăn sáng', 'Ăn vặt', 'Tráng miệng', 'Healthy', 'Đồ uống'];
-  final List<String> _difficulties = ['Dễ', 'Trung bình', 'Khó'];
+  final List<String> _categories = ['main_dish'.tr(), 'breakfast'.tr(), 'snack'.tr(), 'dessert'.tr(), 'healthy'.tr(), 'beverage'.tr()];
+  final List<String> _difficulties = ['easy'.tr(), 'medium'.tr(), 'hard'.tr()];
 
   @override
   void initState() {
@@ -130,7 +131,7 @@ class _EditFoodScreenState extends State<EditFoodScreen> {
         tags: tagsList,
         category: _selectedCategory,
         time: _timeController.text.trim().isNotEmpty ? _timeController.text.trim() : "15 phút",
-        servings: "${_servings.toInt()} người", 
+        servings: "${_servings.toInt()} "+"serving".tr(), 
         difficulty: _selectedDifficulty,
       );
 
@@ -153,7 +154,7 @@ class _EditFoodScreenState extends State<EditFoodScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text("Chỉnh sửa món ăn"),
+        title:  Text("edit_recipe".tr()),
         backgroundColor: Colors.deepOrange,
         foregroundColor: Colors.white,
         elevation: 0,
@@ -164,13 +165,13 @@ class _EditFoodScreenState extends State<EditFoodScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildSectionTitle("Thông tin cơ bản"),
+            _buildSectionTitle("basic_info".tr()),
             _buildTextField(controller: _titleController, label: "Tên món ăn", icon: Icons.restaurant),
             
             const SizedBox(height: 15),
             
             // --- Hiển thị ảnh cũ hoặc ảnh mới ---
-            const Text("Hình ảnh", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
+             Text("image".tr(), style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
             const SizedBox(height: 10),
             InkWell(
               onTap: _pickImages,
@@ -192,7 +193,7 @@ class _EditFoodScreenState extends State<EditFoodScreen> {
 
             const SizedBox(height: 25),
 
-            _buildSectionTitle("Chi tiết món ăn"),
+            _buildSectionTitle("detail_info".tr()),
             Row(
               children: [
                 Expanded(child: _buildTextField(controller: _timeController, label: "Thời gian", icon: Icons.timer)),
@@ -219,7 +220,7 @@ class _EditFoodScreenState extends State<EditFoodScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Khẩu phần: ${_servings.toInt()} người", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                  Text("servings".tr() + ": ${_servings.toInt()} ${"people".tr()}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
                   Slider(
                     value: _servings, min: 1, max: 10, divisions: 9, activeColor: Colors.deepOrange,
                     onChanged: (val) => setState(() => _servings = val),
@@ -240,16 +241,16 @@ class _EditFoodScreenState extends State<EditFoodScreen> {
             _buildTextField(controller: _tagsController, label: "Thẻ (Tags)", hint: "Cách nhau bằng dấu phẩy", icon: Icons.local_offer),
 
             const SizedBox(height: 25),
-            _buildSectionTitle("Công thức"),
-            _buildTextField(controller: _ingredientsController, label: "Nguyên liệu", maxLines: 4),
+            _buildSectionTitle("recipe".tr()),
+            _buildTextField(controller: _ingredientsController, label: "ingredients".tr(), maxLines: 4),
             const SizedBox(height: 15),
-            _buildTextField(controller: _instructionsController, label: "Cách làm chi tiết", maxLines: 6),
+            _buildTextField(controller: _instructionsController, label: "instructions".tr(), maxLines: 6),
 
             const SizedBox(height: 25),
-            _buildSectionTitle("Tùy chọn khác"),
-            _buildTextField(controller: _noteController, label: "Ghi chú cá nhân"),
+            _buildSectionTitle("other_info".tr()),
+            _buildTextField(controller: _noteController, label: "personal_note"),
             SwitchListTile(
-              title: const Text("Chia sẻ công khai?"), value: _isShared, activeColor: Colors.deepOrange,
+              title:  Text("share_publicly".tr()), value: _isShared, activeColor: Colors.deepOrange,
               onChanged: (val) => setState(() => _isShared = val),
             ),
 

@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../models/food_model.dart';
@@ -12,7 +13,7 @@ class ManageFoodsScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6FA), // Màu nền xám nhạt cho app Admin
       appBar: AppBar(
-        title: const Text("Quản lý công thức Admin", style: TextStyle(fontWeight: FontWeight.bold)),
+        title:  Text("admin_manage_recipes".tr(), style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.deepPurple, // Màu tím đặc trưng cho Admin
         foregroundColor: Colors.white,
         elevation: 0,
@@ -95,13 +96,13 @@ class ManageFoodsScreen extends StatelessWidget {
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(color: Colors.green[100], borderRadius: BorderRadius.circular(4)),
-                              child: Text("Đã duyệt", style: TextStyle(color: Colors.green[800], fontSize: 11)),
+                              child: Text("approved".tr(), style: TextStyle(color: Colors.green[800], fontSize: 11)),
                             ),
                             const SizedBox(width: 8),
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(color: Colors.orange[100], borderRadius: BorderRadius.circular(4)),
-                              child: Text(food.difficulty, style: TextStyle(color: Colors.orange[800], fontSize: 11)),
+                              child: Text("level".tr(), style: TextStyle(color: Colors.orange[800], fontSize: 11)),
                             ),
                           ],
                         )
@@ -134,7 +135,7 @@ class ManageFoodsScreen extends StatelessWidget {
         backgroundColor: Colors.deepPurple,
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add),
-        label: const Text("Thêm món"),
+        label: Text("add_recipe".tr()),
       ),
     );
   }
@@ -144,12 +145,12 @@ class ManageFoodsScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("Xóa công thức"),
+        title:  Text("delete_recipe".tr()),
         content: const Text("Bạn có chắc chắn muốn xóa món ăn này khỏi hệ thống không?"),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("Hủy", style: TextStyle(color: Colors.grey)),
+            child:  Text("cancel".tr(), style: TextStyle(color: Colors.grey)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
@@ -159,7 +160,7 @@ class ManageFoodsScreen extends StatelessWidget {
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Đã xóa món ăn!")));
             },
-            child: const Text("Xóa", style: TextStyle(color: Colors.white)),
+            child:  Text("delete".tr(), style: TextStyle(color: Colors.white)),
           ),
         ],
       ),

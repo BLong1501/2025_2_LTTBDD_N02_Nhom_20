@@ -2,6 +2,7 @@ import 'package:btl_ltdd/view/community/community_screen.dart';
 import 'package:btl_ltdd/view/home/meal_plan_screen.dart';
 import 'package:btl_ltdd/view/profile/profile_screen.dart';
 import 'package:btl_ltdd/view/widgets/blogger_navigator_screen.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../models/food_model.dart'; 
@@ -46,10 +47,12 @@ class _BloggerHomeScreenState extends State<BloggerHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final currentLocale = context.locale;
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
         child: IndexedStack(
+          key: ValueKey(currentLocale.languageCode),
           index: _selectedIndex,
           children: _pages,
         ),
@@ -163,15 +166,15 @@ class _DiscoverViewState extends State<DiscoverView> {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 5))],
               ),
-              child: const Column(
+              child:  Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("CHÀO MỪNG ĐẾN VỚI", style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                  Text("wellcome_to".tr(), style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold, letterSpacing: 1)),
                   Text("COOKY!", style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w900, fontFamily: 'Cursive')),
                   SizedBox(height: 10),
                   Row(
                     children: [
-                      Expanded(child: Text("Hôm nay bạn muốn ăn gì nào?", style: TextStyle(color: Colors.white, fontSize: 16))),
+                      Expanded(child: Text("what_meal_plan".tr(), style: TextStyle(color: Colors.white, fontSize: 16))),
                       Icon(Icons.auto_awesome, color: Colors.amberAccent),
                     ],
                   )
@@ -229,7 +232,7 @@ class _DiscoverViewState extends State<DiscoverView> {
                       // Dòng mặc định: Tìm tất cả cho "..."
                       ListTile(
                         leading: const Icon(Icons.search, color: Colors.orange),
-                        title: Text('Tìm kiếm tất cả cho "$_searchQuery"', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.orange)),
+                        title: Text('${'search_for'.tr()} "$_searchQuery"', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.orange)),
                         onTap: () => _goToSearchResults(_searchQuery),
                       ),
                       const Divider(height: 1),
@@ -243,7 +246,7 @@ class _DiscoverViewState extends State<DiscoverView> {
                             child: Image.network(food.imageUrl, width: 40, height: 40, fit: BoxFit.cover, errorBuilder: (_,__,___) => const Icon(Icons.fastfood)),
                           ),
                           title: Text(food.title, maxLines: 1, overflow: TextOverflow.ellipsis),
-                          subtitle: Text("🔥 Độ khó: ${food.difficulty}", style: const TextStyle(fontSize: 12)),
+                          subtitle: Text("🔥 ${'level'.tr()}: ${food.difficulty}", style: const TextStyle(fontSize: 12)),
                           onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => MealDetailScreen(food: food))),
                         );
                       }),
@@ -359,7 +362,7 @@ class SearchResultsScreen extends StatelessWidget {
                 children: [
                   Icon(Icons.search_off, size: 80, color: Colors.grey[300]),
                   const SizedBox(height: 15),
-                  Text("Không tìm thấy món ăn hay nguyên liệu nào", style: TextStyle(color: Colors.grey[600], fontSize: 16)),
+                  Text("no_results".tr(), style: TextStyle(color: Colors.grey[600], fontSize: 16)),
                 ],
               ),
             );

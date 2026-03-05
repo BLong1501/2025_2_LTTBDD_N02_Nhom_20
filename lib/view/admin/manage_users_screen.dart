@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/admin_user_provider.dart';
@@ -41,7 +42,7 @@ class _ManageUsersScreenState
       child: Scaffold(
         backgroundColor: Colors.grey[100],
         appBar: AppBar(
-          title: const Text("Quản lý người dùng"),
+          title:  Text("manage_users".tr()),
           backgroundColor: Colors.deepPurple,
           bottom: const TabBar(
             labelColor: Colors.white,        // Tab đang chọn
@@ -156,8 +157,8 @@ class _ManageUsersScreenState
                     ),
                   ),
                   if (user.isLocked)
-                    const Text(
-                      "Tài khoản bị khóa",
+                     Text(
+                      "locked_account".tr(),
                       style: TextStyle(
                           color: Colors.orange),
                     ),

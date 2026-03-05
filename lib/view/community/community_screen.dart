@@ -3,6 +3,7 @@ import 'package:btl_ltdd/view/home/meal_plan_screen.dart';
 import 'package:btl_ltdd/view/profile/profile_screen.dart';
 import 'package:btl_ltdd/view/profile/public_profile.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; // Cần import để lấy info user
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../models/food_model.dart';
@@ -130,9 +131,9 @@ class _CommunityScreenState extends State<CommunityScreen> {
                     color: Colors.black87,
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: const Row(
+                  child:  Row(
                     children: [
-                      Text("Xem công thức", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+                      Text("show_recipe".tr(), style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
                       SizedBox(width: 4),
                       Icon(Icons.bookmark_border, color: Colors.white, size: 16),
                     ],
@@ -151,7 +152,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
             children: [
               if (food.likedBy.isNotEmpty)
                 Text(
-                  "${food.likedBy.length} lượt thích",
+                  "${food.likedBy.length} " "likes".tr(), // Hiển thị số lượng like
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
               const SizedBox(height: 5),
@@ -159,7 +160,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
                 text: TextSpan(
                   style: const TextStyle(color: Colors.black, fontSize: 14),
                   children: [
-                    const TextSpan(text: "Mô tả: ", style: TextStyle(fontWeight: FontWeight.bold)),
+                     TextSpan(text: "describe".tr() + ": ", style: TextStyle(fontWeight: FontWeight.bold)),
                     TextSpan(
                       text: food.note.isNotEmpty ? food.note : food.title,
                       style: const TextStyle(height: 1.4),

@@ -216,7 +216,7 @@ class _MealPlansScreenState extends State<MealPlansScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      "${food.ingredients.length} nguyên liệu",
+                      "${food.ingredients.length} " "ingredients".tr(), // Hiển thị số lượng nguyên liệu
                       style: TextStyle(color: Colors.grey[600], fontSize: 13),
                     ),
                   ],

@@ -51,6 +51,7 @@
   "post": "Bài đăng",
   "main_dish": "Món chính",
   "dessert": "Món tráng miệng",
+  "snack": "Món ăn vặt",
   "appetizer": "Món khai vị",
   "beverage": "Đồ uống",
   "other": "Khác",
@@ -90,5 +91,39 @@
 
   "user_registrations": "Đăng ký người dùng",
   "recipe_updates": "Cập nhật công thức",
-  "blog_posts_shared": "Bài viết blogger chia sẻ"
+  "blog_posts_shared": "Bài viết blogger chia sẻ",
+  "search_for": "Tìm kiếm cho",
+  "wellcome_to": "Chào mừng đến với",
+  "what_meal_plan": "Bạn muốn lên kế hoạch bữa ăn nào hôm nay?",
+  "breakfast" : "Ăn sáng",
+  "healthy": "Healthy",
+  "people": "người",
+  "add_image": "Thêm hình ảnh",
+  "basic_info": "Thông tin cơ bản",
+  "image": "Hình ảnh",
+  "food_detail": "Chi tiết món ăn"  ,
+  "category_and_tags": "Danh mục & Thẻ",
+  "recipe": "Công thức",
+  "admin_profile": "Hồ sơ quản trị",
+  "users_registered": "Người dùng đã đăng ký",
+   "recipes_updated": "Công thức đã cập nhật",
+      "blogger_posts": "Bài viết blogger đã chia sẻ",
+      "food_name": "Tên món ăn",
+      "admin_manage_recipes": "Quản lý công thức Admin",
+      "approved": "Đã duyệt",
+      
+      "minutes": "phút",
+      "locked_account": "Tài khoản bị khóa",
+      "active_account": "Tài khoản hoạt động",
+      "blogger_detail": "Chi tiết Blogger",
+      "phone_number": "Số điện thoại",
+      "nothing": "Chưa có bài đăng nào",
+      "manage_users": "Quản lý người dùng"
+      
+  
+  
+  
+ 
+  
+  
 }

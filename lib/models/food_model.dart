@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class FoodModel {
   final String id;
@@ -70,9 +71,9 @@ class FoodModel {
       isApproved: data['isApproved'] ?? true,
 
       // --- BỔ SUNG 3 TRƯỜNG MỚI VÀO ĐÂY ---
-      time: data['time'] ?? '15 phút',
-      servings: data['servings'] ?? '2 người',
-      difficulty: data['difficulty'] ?? 'Dễ',
+      time: data['time'] ?? '15'+" minutes".tr(),
+      servings: data['servings'] ?? '2'+" people".tr(),
+      difficulty: data['difficulty'] ?? 'Easy'.tr(),
       isFeatured: data['isFeatured'] ?? false,
     );
   }

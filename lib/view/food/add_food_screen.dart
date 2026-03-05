@@ -33,19 +33,19 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
   // Variables
   bool _isLoading = false;
   bool _isShared = true;
-  String _selectedCategory = 'Món chính';
+  String _selectedCategory = 'main_dish'.tr();
   
   // --- MỚI: Variables cho Khẩu phần và Độ khó
   double _servings = 2.0; // Số người mặc định (2 người)
-  String _selectedDifficulty = 'Dễ';
-  final List<String> _difficulties = ['Dễ', 'Trung bình', 'Khó'];
+  String _selectedDifficulty = 'easy'.tr();
+  final List<String> _difficulties = ['easy'.tr(), 'medium'.tr(), 'hard'.tr()];
   
   // Quản lý ảnh
   final ImagePicker _picker = ImagePicker();
   List<File> _selectedImages = [];
 
   final List<String> _categories = [
-    'Món chính', 'Ăn sáng', 'Ăn vặt', 'Tráng miệng', 'Healthy', 'Đồ uống'
+    'main_dish'.tr(), 'breakfast'.tr(), 'snack'.tr(), 'dessert'.tr(), 'healthy'.tr(), 'beverage'.tr()
   ];
 
   @override
@@ -150,7 +150,7 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
         isApproved: true,
         // --- TRUYỀN DỮ LIỆU MỚI VÀO MODEL ---
         time: _timeController.text.trim().isNotEmpty ? _timeController.text.trim() : "15 phút", // Mặc định nếu trống
-        servings: "${_servings.toInt()} người", 
+        servings: "${_servings.toInt()} ${"people".tr()}", // Hiển thị số người
         difficulty: _selectedDifficulty,
       );
 
@@ -178,7 +178,7 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text("Thêm món mới"),
+        title:  Text("add_recipe".tr()),
         backgroundColor: Colors.deepOrange,
         foregroundColor: Colors.white,
         elevation: 0,
@@ -190,7 +190,7 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 1. TÊN MÓN
-            _buildSectionTitle("Thông tin cơ bản"),
+            _buildSectionTitle("basic_info".tr()),
             _buildTextField(
               controller: _titleController,
               label: "Tên món ăn",
@@ -201,7 +201,7 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
             const SizedBox(height: 15),
             
             // 2. CHỌN ẢNH
-            const Text("Hình ảnh (Tối đa 10 ảnh)", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
+             Text("image".tr() ,style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
             const SizedBox(height: 10),
             SizedBox(
               height: 120,
@@ -221,12 +221,12 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
                            borderRadius: BorderRadius.circular(10),
                            border: Border.all(color: Colors.grey.shade300, style: BorderStyle.solid),
                          ),
-                         child: const Column(
+                         child:  Column(
                            mainAxisAlignment: MainAxisAlignment.center,
                            children: [
                              Icon(Icons.add_a_photo, color: Colors.grey),
                              SizedBox(height: 4),
-                             Text("Thêm ảnh", style: TextStyle(color: Colors.grey, fontSize: 12)),
+                             Text("add_image".tr(), style: TextStyle(color: Colors.grey, fontSize: 12)),
                            ],
                          ),
                        ),
@@ -259,7 +259,7 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
             const SizedBox(height: 25),
 
             // --- 3. KHU VỰC THÔNG SỐ (THỜI GIAN, KHẨU PHẦN, ĐỘ KHÓ) ---
-            _buildSectionTitle("Chi tiết món ăn"),
+            _buildSectionTitle("food_detail".tr()),
             
             // Hàng 1: Thời gian và Độ khó
             Row(
@@ -267,7 +267,7 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
                 Expanded(
                   child: _buildTextField(
                     controller: _timeController,
-                    label: "Thời gian làm",
+                    label: "time".tr(),
                     hint: "VD: 15 phút, 1 giờ",
                     icon: Icons.timer,
                   ),
@@ -333,14 +333,14 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
             const SizedBox(height: 25),
 
             // 4. DANH MỤC & TAGS
-            _buildSectionTitle("Phân loại"),
+            _buildSectionTitle("category_and_tags".tr() ),
              Row(
               children: [
                 Expanded(
                   child: DropdownButtonFormField<String>(
                     value: _selectedCategory,
                     decoration: InputDecoration(
-                      labelText: "Danh mục",
+                      labelText: "category".tr(),
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
                     ),
@@ -355,7 +355,7 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
             const SizedBox(height: 15),
             _buildTextField(
               controller: _tagsController,
-              label: "Thẻ (Tags)",
+              label: "tag".tr(),
               hint: "Ngan cach bang dau phay (VD: cay, nhanh, de lam)",
               icon: Icons.local_offer,
             ),
@@ -363,10 +363,10 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
             const SizedBox(height: 25),
 
             // 5. NGUYÊN LIỆU & CÁCH LÀM
-            _buildSectionTitle("Công thức"),
+            _buildSectionTitle("recipe".tr()),
             _buildTextField(
               controller: _ingredientsController,
-              label: "Nguyên liệu",
+              label: "ingredients".tr(),
               hint: "Mỗi dòng một nguyên liệu...",
               icon: Icons.list,
               maxLines: 4,
@@ -374,7 +374,7 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
             const SizedBox(height: 15),
             _buildTextField(
               controller: _instructionsController,
-              label: "Cách làm chi tiết",
+              label: "instructions".tr(),
               hint: "Bước 1: ...",
               icon: Icons.description,
               maxLines: 6,

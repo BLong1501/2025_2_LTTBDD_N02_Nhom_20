@@ -97,7 +97,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         items: [
           BottomNavigationBarItem(
             icon: const Icon(Icons.dashboard),
-            label: "Admin_Dashboard".tr(),
+            label: "admin_dashboard".tr(),
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.people),
@@ -109,7 +109,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.person),
-            label: "Admin Profile".tr(),
+            label: "admin_profile".tr(),
           ),
         ],
       ),
@@ -150,7 +150,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
             MainAxisAlignment.spaceBetween,
         children: [
            Text(
-            "System Overview".tr(),
+            "system_overview".tr(),
             style: TextStyle(
                 color: Colors.white,
                 fontSize: 18,
@@ -177,19 +177,19 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
       mainAxisSpacing: 12,
       childAspectRatio: 1.3,
       children: [
-        _statCard("Total Users".tr(),
+        _statCard("total_users".tr(),
             model?.totalUsers ?? 0,
             Icons.people,
             Colors.blue),
-        _statCard("Total Foods".tr(),
+        _statCard("total_foods".tr(),
             model?.totalFoods ?? 0,
             Icons.restaurant,
             Colors.green),
-        _statCard("Pending Approval".tr(),
+        _statCard("pending_approvals".tr(),
             model?.pendingFoods ?? 0,
             Icons.hourglass_empty,
             Colors.orange),
-        _statCard("Featured Foods".tr(),
+        _statCard("featured_recipes".tr(),
             model?.featuredFoods ?? 0,
             Icons.star,
             Colors.purple),
@@ -242,7 +242,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
           CrossAxisAlignment.start,
       children: [
         Text(
-          "System Statistics".tr(),
+          "system_statistics".tr(),
           style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold),
