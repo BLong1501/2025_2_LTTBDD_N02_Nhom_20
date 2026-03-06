@@ -88,7 +88,9 @@ class DashboardChart extends StatelessWidget {
               x: index,
               barRods: [
                 BarChartRodData(
-                  toY: monthlyUsers[index].toDouble(),
+                  toY: index < monthlyUsers.length
+                  ? monthlyUsers[index].toDouble()
+                  : 0,
                   width: 14,
                   borderRadius: BorderRadius.circular(4),
                   color: Colors.teal,
