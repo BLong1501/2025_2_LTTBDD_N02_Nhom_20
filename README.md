@@ -40,6 +40,9 @@ Dự án tuân thủ kiến trúc phân lớp để dễ dàng bảo trì:
 * **Backend:** Firebase
 
 ---
+## Tài khoản
+tài khoản: user5
+mật khẩu: user5@
 
 ##  Hướng dẫn cài đặt
 
