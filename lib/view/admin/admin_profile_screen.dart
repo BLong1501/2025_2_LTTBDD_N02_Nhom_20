@@ -322,14 +322,9 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                         child: Column(
                           children: [
 
-                            _menuTile(
-                              icon: Icons.favorite_border,
-                              title:
-                                  "favorite_foods".tr(),
-                              onTap: () {},
-                            ),
+                           
 
-                            _divider(),
+                            // _divider(),
 
                             _menuTile(
                               icon: Icons.language,

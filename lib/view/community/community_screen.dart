@@ -25,8 +25,8 @@ class _CommunityScreenState extends State<CommunityScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text(
-          "Cộng đồng Cooky",
+        title:  Text(
+          "community_cooky".tr(),
           style: TextStyle(color: Colors.deepOrange, fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.white,
@@ -111,12 +111,8 @@ class _CommunityScreenState extends State<CommunityScreen> {
                   _service.toggleLike(food.id, food.likedBy);
                 },
               ),
-              IconButton(
-                icon: const Icon(Icons.chat_bubble_outline, size: 26),
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Tính năng bình luận đang phát triển")));
-                },
-              ),
+              
+              
               const Spacer(),
               InkWell(
                 onTap: () {

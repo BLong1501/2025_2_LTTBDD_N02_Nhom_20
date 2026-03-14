@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -122,7 +123,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Form Tên
-                  const Text("Tên hiển thị (*)", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
+                   Text("name".tr(), style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
                   const SizedBox(height: 8),
                   _buildTextField(
                     controller: _nameController,
@@ -132,7 +133,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   const SizedBox(height: 20),
 
                   // Form Tiểu sử
-                  const Text("Tiểu sử ngắn (Bio)", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
+                   Text("bio".tr(), style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
                   const SizedBox(height: 8),
                   _buildTextField(
                     controller: _bioController,
@@ -143,7 +144,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   const SizedBox(height: 20),
 
                   // Form Số điện thoại
-                  const Text("Số điện thoại", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
+                   Text("phone_number".tr(), style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
                   const SizedBox(height: 8),
                   _buildTextField(
                     controller: _phoneController,
@@ -173,8 +174,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       ),
                       child: _isLoading
                           ? const CircularProgressIndicator(color: Colors.white)
-                          : const Text(
-                              "LƯU THAY ĐỔI",
+                          :  Text(
+                              "save".tr(),
                               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
                             ),
                     ),

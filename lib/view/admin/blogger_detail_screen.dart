@@ -1,4 +1,5 @@
 import 'package:btl_ltdd/view/admin/admin_food_detail_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // Thêm import Firestore để thực hiện lệnh xóa
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import '../../models/user_model.dart';
@@ -14,18 +15,68 @@ class BloggerDetailScreen extends StatelessWidget {
     required this.user,
   });
 
+  // --- HÀM XỬ LÝ XÓA TÀI KHOẢN ---
+  void _confirmDeleteUser(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text("delete".tr(), style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.red)),
+        // Tạm dùng câu hỏi xác nhận chung từ từ điển
+        content: Text("Bạn có chắc chắn muốn xóa tài khoản '${user.username}' không? Hành động này sẽ xóa dữ liệu người dùng khỏi hệ thống."),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text("cancel".tr(), style: const TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () async {
+              Navigator.pop(ctx); // Đóng hộp thoại
+              try {
+                // Xóa document của user này trong bảng 'users'
+                await FirebaseFirestore.instance.collection('users').doc(user.id).delete();
+                
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Đã xóa tài khoản thành công!")),
+                  );
+                  Navigator.pop(context); // Quay về màn hình danh sách user
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Lỗi khi xóa: $e")),
+                  );
+                }
+              }
+            },
+            child: Text("delete".tr(), style: const TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<AdminUserProvider>();
 
     return Scaffold(
       appBar: AppBar(
-        title:  Text(
+        title: Text(
           "blogger_detail".tr(),
-          style: TextStyle(color: Colors.white),
+          style: const TextStyle(color: Colors.white),
         ),
         backgroundColor: Colors.deepPurple,
         iconTheme: const IconThemeData(color: Colors.white),
+        // --- THÊM NÚT XÓA Ở GÓC PHẢI APPBAR ---
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.delete_forever, color: Colors.redAccent),
+            tooltip: 'Xóa tài khoản',
+            onPressed: () => _confirmDeleteUser(context),
+          ),
+        ],
       ),
       body: FutureBuilder<Map<String, dynamic>>(
         future: provider.getBloggerStats(user.id),
@@ -55,7 +106,7 @@ class BloggerDetailScreen extends StatelessWidget {
                       ),
                     ),
                     Text(user.email),
-                    Text("phone_number".tr() + ": ${user.phoneNumber}"),
+                    Text("${"phone_number".tr()}: ${user.phoneNumber}"),
                     const SizedBox(height: 12),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -90,8 +141,8 @@ class BloggerDetailScreen extends StatelessWidget {
                     final foodMaps = foodSnapshot.data!;
 
                     if (foodMaps.isEmpty) {
-                      return const Center(
-                        child: Text("nothing"),
+                      return Center(
+                        child: Text("nothing".tr()),
                       );
                     }
 
@@ -111,7 +162,6 @@ class BloggerDetailScreen extends StatelessWidget {
                         return Card(
                           margin: const EdgeInsets.all(12),
                           child: ListTile(
-                            // --- ĐÃ SỬA LỖI HÌNH ẢNH Ở ĐÂY ---
                             leading: ClipRRect(
                               borderRadius: BorderRadius.circular(8),
                               child: Container(
@@ -119,22 +169,22 @@ class BloggerDetailScreen extends StatelessWidget {
                                 height: 60,
                                 color: Colors.grey[200], // Nền xám lót dưới
                                 child: (food.imageUrl.isNotEmpty &&
-                                  food.imageUrl.startsWith('http'))
-                              ? Image.network(
-                                  food.imageUrl,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) =>
-                                      const Icon(Icons.broken_image, color: Colors.grey),
-                                )
-                              : const Icon(
-                                  Icons.fastfood,
-                                  color: Colors.deepPurple,
-                                ),
+                                        food.imageUrl.startsWith('http'))
+                                    ? Image.network(
+                                        food.imageUrl,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (context, error, stackTrace) =>
+                                            const Icon(Icons.broken_image, color: Colors.grey),
+                                      )
+                                    : const Icon(
+                                        Icons.fastfood,
+                                        color: Colors.deepPurple,
+                                      ),
                               ),
                             ),
                             title: Text(food.title),
                             subtitle: Text(
-                              food.isApproved ? "Đã duyệt" : "Chờ duyệt",
+                              food.isApproved ? "approved".tr() : "Chờ duyệt",
                               style: TextStyle(
                                 color: food.isApproved ? Colors.green : Colors.orange,
                               ),

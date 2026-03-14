@@ -118,5 +118,11 @@
   "blogger_detail": "Blogger details",
   "phone_number": "Phone number",
   "nothing": "No posts yet",
-  "manage_users": "Manage users"
+  "manage_users": "Manage users",
+  "Language": "English",
+  "community_cooky": "Cooky community",
+  "account_deleted": "Account deleted",
+  "name": "Name",
+  "bio": "Short bio"
+  
 }

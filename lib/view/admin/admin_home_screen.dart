@@ -38,7 +38,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
 
       /// ================= APP BAR =================
       appBar: AppBar(
-        title: Text("admin_dashboard".tr()),
+        title: Text("admin_dashboard".tr(), style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),), 
         centerTitle: true,
         backgroundColor: Colors.deepPurple,
         actions: [
@@ -185,7 +185,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
             model?.totalFoods ?? 0,
             Icons.restaurant,
             Colors.green),
-        _statCard("pending_approvals".tr(),
+        _statCard("account_deleted".tr(),
             model?.pendingFoods ?? 0,
             Icons.hourglass_empty,
             Colors.orange),

@@ -42,7 +42,7 @@ class _ManageUsersScreenState
       child: Scaffold(
         backgroundColor: Colors.grey[100],
         appBar: AppBar(
-          title:  Text("manage_users".tr()),
+          title:  Text("manage_users".tr() ,style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           backgroundColor: Colors.deepPurple,
           bottom: const TabBar(
             labelColor: Colors.white,        // Tab đang chọn

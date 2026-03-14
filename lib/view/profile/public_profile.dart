@@ -1,4 +1,5 @@
 import 'package:btl_ltdd/view/food/meal_plan_detail_screen.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -45,6 +46,8 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
           _isFollowing = followers.contains(_currentUserId);
           _isLoadingInfo = false;
         });
+      } else {
+        setState(() => _isLoadingInfo = false);
       }
     } catch (e) {
       print("Lỗi load Public Profile: $e");
@@ -65,18 +68,15 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
       final docRef = _firestore.collection('users').doc(widget.authorId);
       
       if (_isFollowing) {
-        // Thêm ID mình vào mảng followers của họ
         await docRef.update({
           'followers': FieldValue.arrayUnion([_currentUserId])
         });
       } else {
-        // Xóa ID mình khỏi mảng followers của họ
         await docRef.update({
           'followers': FieldValue.arrayRemove([_currentUserId])
         });
       }
     } catch (e) {
-      // Nếu lỗi, hoàn tác lại UI
       setState(() {
         _isFollowing = !_isFollowing;
         _followersCount += _isFollowing ? 1 : -1;
@@ -87,6 +87,52 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // -------------------------------------------------------------
+    // CHẶN NGAY TỪ ĐẦU: NẾU ĐÂY LÀ ADMIN THÌ HIỆN GIAO DIỆN TRỐNG 
+    // -------------------------------------------------------------
+    // Bạn có thể check bằng widget.authorId == 'ID_CỦA_ADMIN' 
+    // HOẶC check thông qua _userData?['role'] == 'admin'
+    // Tùy theo cách bạn tổ chức database. Ở đây tôi dùng biến role.
+    
+    bool isAdmin = false;
+    if (_userData != null && _userData!['role'] == 'admin') {
+      isAdmin = true;
+    }
+    // Nếu bạn không dùng role mà check cứng bằng ID thì mở comment dòng dưới:
+    // if (widget.authorId == 'admin_id') isAdmin = true;
+
+    if (!_isLoadingInfo && isAdmin) {
+      return Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          title: const Text("Tài khoản Admin", style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)),
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black87,
+          elevation: 0,
+          centerTitle: true,
+        ),
+        body: const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.admin_panel_settings, size: 80, color: Colors.deepPurple),
+              SizedBox(height: 20),
+              Text(
+                "Đây là tài khoản Admin",
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.deepPurple),
+              ),
+              SizedBox(height: 10),
+              Text(
+                "Thông tin chi tiết được bảo mật.",
+                style: TextStyle(color: Colors.grey, fontSize: 16),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    // -------------------------------------------------------------
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -136,9 +182,6 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                                   builder: (context) {
                                     String realCurrentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
                                     
-                                    // BẠN CÓ THỂ MỞ COMMENT DÒNG DƯỚI ĐỂ CHECK LOG XEM 2 ID CÓ THẬT SỰ TRÙNG NHAU KHÔNG
-                                    // print("Author ID: ${widget.authorId} | My ID: $realCurrentUserId");
-
                                     // NẾU KHÁC NHAU THÌ MỚI HIỆN NÚT FOLLOW
                                     if (widget.authorId != realCurrentUserId) {
                                       return SizedBox(
@@ -184,17 +227,16 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                 const Divider(thickness: 1, color: Color(0xFFF0F0F0)),
 
                 // --- 2. GRID CÔNG THỨC CỦA TÁC GIẢ ---
-                const Padding(
+                 Padding(
                   padding: EdgeInsets.all(15),
                   child: Align(
                     alignment: Alignment.centerLeft,
-                    child: Text("Công thức đã chia sẻ", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    child: Text("recipes_shared".tr(), style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   ),
                 ),
 
                 Expanded(
                   child: StreamBuilder<QuerySnapshot>(
-                    // Lấy các bài đăng của user này & được đánh dấu isShared = true
                     stream: _firestore.collection('foods')
                         .where('authorId', isEqualTo: widget.authorId)
                         .where('isShared', isEqualTo: true)
@@ -214,14 +256,13 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                       return GridView.builder(
                         padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
                         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2, // 2 cột
+                          crossAxisCount: 2, 
                           crossAxisSpacing: 10,
                           mainAxisSpacing: 10,
-                          childAspectRatio: 0.85, // Tỉ lệ chiều cao/rộng của ô
+                          childAspectRatio: 0.85, 
                         ),
                         itemCount: docs.length,
                         itemBuilder: (context, index) {
-                          // Chuyển Data về FoodModel
                           final docData = docs[index].data() as Map<String, dynamic>;
                           final food = FoodModel.fromMap(docData, docs[index].id);
 
@@ -232,9 +273,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen> {
                             child: Container(
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(15),
-                                color: Colors.grey[300], // Thêm nền xám phòng khi không có ảnh
-                                
-                                // --- SỬA Ở ĐÂY: Kiểm tra có ảnh mới dùng NetworkImage ---
+                                color: Colors.grey[300], 
                                 image: food.imageUrl.isNotEmpty 
                                     ? DecorationImage(
                                         image: NetworkImage(food.imageUrl),

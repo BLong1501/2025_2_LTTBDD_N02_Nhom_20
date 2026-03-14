@@ -1,9 +1,12 @@
+import 'package:btl_ltdd/view/admin/add_edit_food_screen.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../models/food_model.dart';
-// Nhớ đổi đường dẫn này cho đúng với vị trí file AdminAddRecipeScreen của bạn
+// Màn hình thêm mới
 import 'admin_add_recipe_screen.dart'; 
+// IMPORT MÀN HÌNH EDIT VÀO ĐÂY (AddEditFoodScreen)
+// import 'package:btl_ltdd/view/food/add_edit_food_screen.dart'; // Sửa lại đường dẫn nếu cần
 
 class ManageFoodsScreen extends StatelessWidget {
   const ManageFoodsScreen({super.key});
@@ -11,19 +14,17 @@ class ManageFoodsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F6FA), // Màu nền xám nhạt cho app Admin
+      backgroundColor: const Color(0xFFF5F6FA),
       appBar: AppBar(
-        title:  Text("admin_manage_recipes".tr(), style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.deepPurple, // Màu tím đặc trưng cho Admin
+        title: Text("admin_manage_recipes".tr(), style: const TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.deepPurple,
         foregroundColor: Colors.white,
         elevation: 0,
       ),
       
-      // STREAM LẤY DỮ LIỆU CÁC MÓN ĂN DO ADMIN ĐĂNG
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('foods')
-            // Lọc những bài được đánh dấu là nổi bật (bài của Admin)
             .where('isFeatured', isEqualTo: true) 
             .snapshots(),
         builder: (context, snapshot) {
@@ -46,7 +47,6 @@ class ManageFoodsScreen extends StatelessWidget {
 
           final foods = snapshot.data!.docs;
 
-          // HIỂN THỊ DẠNG LISTVIEW (Danh sách dọc)
           return ListView.builder(
             padding: const EdgeInsets.all(15),
             itemCount: foods.length,
@@ -60,7 +60,6 @@ class ManageFoodsScreen extends StatelessWidget {
                 elevation: 2,
                 child: ListTile(
                   contentPadding: const EdgeInsets.all(10),
-                  // Ảnh món ăn
                   leading: ClipRRect(
                     borderRadius: BorderRadius.circular(10),
                     child: Container(
@@ -76,14 +75,12 @@ class ManageFoodsScreen extends StatelessWidget {
                           : const Icon(Icons.fastfood, color: Colors.deepPurple),
                     ),
                   ),
-                  // Tên món ăn
                   title: Text(
                     food.title,
                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  // Thông tin phụ
                   subtitle: Padding(
                     padding: const EdgeInsets.only(top: 5),
                     child: Column(
@@ -109,14 +106,34 @@ class ManageFoodsScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-                  // Nút Xóa (Tùy chọn cho Admin)
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete_outline, color: Colors.red),
-                    onPressed: () {
-                      // Chức năng xóa món ăn khỏi Firebase
-                      _confirmDelete(context, food.id);
-                    },
+                  
+                  // ==========================================
+                  // ĐÂY LÀ CHỖ CÓ NÚT SỬA VÀ XÓA (GỘP LẠI)
+                  // ==========================================
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min, 
+                    children: [
+                      // NÚT SỬA (Màu xanh, hình cây bút)
+                      IconButton(
+                        icon: const Icon(Icons.edit, color: Colors.blue),
+                        onPressed: () {
+                          // Điều hướng sang trang AddEditFoodScreen và quăng dữ liệu Food sang đó
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => AddEditFoodScreen(food: food)),
+                          );
+                        },
+                      ),
+                      // NÚT XÓA (Màu đỏ, hình thùng rác)
+                      IconButton(
+                        icon: const Icon(Icons.delete_outline, color: Colors.red),
+                        onPressed: () {
+                          _confirmDelete(context, food.id);
+                        },
+                      ),
+                    ],
                   ),
+                  // ==========================================
                 ),
               );
             },
@@ -124,7 +141,6 @@ class ManageFoodsScreen extends StatelessWidget {
         },
       ),
 
-      // NÚT CỘNG (MỞ TRANG THÊM CÔNG THỨC)
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           Navigator.push(
@@ -140,27 +156,25 @@ class ManageFoodsScreen extends StatelessWidget {
     );
   }
 
-  // Hàm hiển thị hộp thoại xác nhận xóa
   void _confirmDelete(BuildContext context, String foodId) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title:  Text("delete_recipe".tr()),
-        content: const Text("Bạn có chắc chắn muốn xóa món ăn này khỏi hệ thống không?"),
+        title: Text("delete_recipe".tr()),
+        content:  Text("delete".tr() + " '${foodId}'?"), // Bạn có thể thay foodId bằng tên món ăn nếu muốn
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child:  Text("cancel".tr(), style: TextStyle(color: Colors.grey)),
+            child: Text("cancel".tr(), style: const TextStyle(color: Colors.grey)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () {
-              // Lệnh xóa Firebase
               FirebaseFirestore.instance.collection('foods').doc(foodId).delete();
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Đã xóa món ăn!")));
             },
-            child:  Text("delete".tr(), style: TextStyle(color: Colors.white)),
+            child: Text("delete".tr(), style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),

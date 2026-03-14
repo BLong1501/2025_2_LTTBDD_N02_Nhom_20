@@ -19,7 +19,7 @@ class FoodModel {
   final String servings;   // Ví dụ: "2 người", "4-5 người"
   final String difficulty; // Ví dụ: "Dễ", "Trung bình", "Khó"
   final bool isFeatured; // Có hiển thị ở Discover hay không
-  
+  final double rating;
 
   FoodModel({
     required this.id,
@@ -39,6 +39,7 @@ class FoodModel {
     this.servings = "", 
     this.difficulty = "Dễ",
     this.isFeatured = false,
+    this.rating = 0.0,
   });
 
   // 1. Chuyển từ Firestore Map sang Object
@@ -75,7 +76,7 @@ class FoodModel {
       servings: data['servings'] ?? '2'+" people".tr(),
       difficulty: data['difficulty'] ?? 'Easy'.tr(),
       isFeatured: data['isFeatured'] ?? false,
-    );
+rating: (data['rating'] ?? 0.0).toDouble(),    );
   }
 
   // 2. Chuyển từ Object sang Map để lưu lên Firestore
@@ -99,6 +100,7 @@ class FoodModel {
       'servings': servings,
       'difficulty': difficulty,
       'isFeatured': isFeatured,
+      'rating': rating,
     };
   }
   
@@ -123,6 +125,7 @@ class FoodModel {
     String? time,
     String? servings,
     String? difficulty,
+    double? rating,
   }) {
     return FoodModel(
       id: id ?? this.id,
@@ -144,6 +147,7 @@ class FoodModel {
       servings: servings ?? this.servings,
       difficulty: difficulty ?? this.difficulty,
       isFeatured: isFeatured ?? this.isFeatured,
+      rating: rating ?? this.rating,
     );
   }
 }

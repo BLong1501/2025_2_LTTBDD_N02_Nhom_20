@@ -9,6 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'follow_list_screen.dart'; //
+import 'favourite_food_screen.dart'; //
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -320,14 +321,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               title: "favorite_foods".tr(),
                               iconColor: Colors.redAccent,
                               onTap: () {
-                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Đang phát triển...")));
+                                Navigator.push(context, MaterialPageRoute(builder: (_) => const FavoriteFoodsScreen()));
                               },
                             ),
                             _buildDivider(),
                             _buildMenuTile(
                               icon: Icons.language,
                               title: "language".tr(args: ["Language"]), // Sử dụng .tr() để dịch tiêu đề
-                              trailingText: "Tiếng Việt",
+                              trailingText: "Language".tr(),
                               onTap: _showLanguageBottomSheet, // Mở bảng chọn ngôn ngữ
                             ),
                           ],
