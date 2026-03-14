@@ -36,7 +36,8 @@ Dự án tuân thủ kiến trúc phân lớp để dễ dàng bảo trì:
 * **Framework:** Flutter
 * **Language:** Dart
 * **State Management:** Provider
-* **Storage:** (Dự kiến: SQLite hoặc Firebase)
+* **Storage:** Cloud Firebase
+* **Backend:** Firebase
 
 ---
 
@@ -53,4 +54,5 @@ Dự án tuân thủ kiến trúc phân lớp để dễ dàng bảo trì:
     ```
 
 ---
-**Đội ngũ phát triển:** [Tên của bạn]
+**Đội ngũ phát triển:** 
+- Trần Bảo Long - Phenikaa University
