@@ -2,66 +2,102 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
 class DashboardChart extends StatelessWidget {
-  final List<int> monthlyPending;
-  final List<int> monthlyApproved;
+  final List<int> monthlyUsers;
 
   const DashboardChart({
     super.key,
-    required this.monthlyPending,
-    required this.monthlyApproved,
+    required this.monthlyUsers,
   });
+
+  double _getMaxY() {
+    double maxValue =
+        monthlyUsers.reduce((a, b) => a > b ? a : b).toDouble();
+    return (maxValue / 5).ceil() * 5 + 5;
+  }
 
   @override
   Widget build(BuildContext context) {
+    final maxY = _getMaxY();
+
     return SizedBox(
       height: 220,
-      child: LineChart(
-        LineChartData(
-          gridData: FlGridData(show: true),
-          borderData: FlBorderData(show: true),
+      child: BarChart(
+        BarChartData(
+          minY: 0,
+          maxY: maxY,
+
+          gridData: FlGridData(
+            show: true,
+            horizontalInterval: 5,
+            drawVerticalLine: false,
+          ),
+
+          borderData: FlBorderData(
+            show: true,
+            border: const Border(
+              left: BorderSide(),
+              bottom: BorderSide(),
+              right: BorderSide.none,
+              top: BorderSide.none,
+            ),
+          ),
+
           titlesData: FlTitlesData(
+            /// THÁNG
             bottomTitles: AxisTitles(
               sideTitles: SideTitles(
                 showTitles: true,
+                interval: 1,
                 getTitlesWidget: (value, meta) {
-                  const months = [
-                    '1','2','3','4','5','6',
-                    '7','8','9','10','11','12'
-                  ];
-                  if (value.toInt() < 0 || value.toInt() > 11) {
-                    return const Text('');
+                  if (value < 0 || value > 11) {
+                    return const SizedBox();
                   }
-                  return Text(months[value.toInt()]);
+
+                  return Text(
+                    '${value.toInt() + 1}',
+                    style: const TextStyle(fontSize: 10),
+                  );
                 },
               ),
             ),
+
+            /// TRỤC Y
+            leftTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                interval: 5,
+                reservedSize: 35,
+                getTitlesWidget: (value, meta) {
+                  return Text(
+                    value.toInt().toString(),
+                    style: const TextStyle(fontSize: 10),
+                  );
+                },
+              ),
+            ),
+
+            rightTitles:
+                const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            topTitles:
+                const AxisTitles(sideTitles: SideTitles(showTitles: false)),
           ),
-          lineBarsData: [
-            LineChartBarData(
-              spots: List.generate(
-                12,
-                (index) => FlSpot(
-                  index.toDouble(),
-                  monthlyApproved[index].toDouble(),
-                ),
-              ),
-              isCurved: true,
-              color: Colors.green,
-              barWidth: 3,
+
+          barGroups: List.generate(
+            12,
+            (index) => BarChartGroupData(
+              x: index,
+              barRods: [
+                BarChartRodData(
+                  toY: index < monthlyUsers.length
+                  ? monthlyUsers[index].toDouble()
+                  : 0,
+                  width: 14,
+                  borderRadius: BorderRadius.circular(4),
+                  color: Colors.teal,
+                )
+              ],
             ),
-            LineChartBarData(
-              spots: List.generate(
-                12,
-                (index) => FlSpot(
-                  index.toDouble(),
-                  monthlyPending[index].toDouble(),
-                ),
-              ),
-              isCurved: true,
-              color: Colors.orange,
-              barWidth: 3,
-            ),
-          ],
+          ),
         ),
       ),
     );

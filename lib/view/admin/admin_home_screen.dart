@@ -1,7 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:fl_chart/fl_chart.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../services/admin_dashboard_service.dart';
@@ -10,6 +9,7 @@ import 'manage_users_screen.dart';
 import 'manage_foods_screen.dart';
 import '../auth/login_screen.dart';
 import 'admin_profile_screen.dart';
+import 'dashboard_chart.dart';
 
 class AdminHomeScreen extends StatefulWidget {
   const AdminHomeScreen({Key? key}) : super(key: key);
@@ -307,103 +307,25 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
               )
             ],
           ),
-          child: SizedBox(
-            height: 250,
-            child: BarChart(
-              BarChartData(
-                gridData:
-                    FlGridData(show: true),
-                borderData:
-                    FlBorderData(show: false),
-                titlesData: FlTitlesData(
-                  bottomTitles:
-                      AxisTitles(
-                    sideTitles:
-                        SideTitles(
-                      showTitles: true,
-                      getTitlesWidget:
-                          (value, meta) {
-                        const months = [
-                          '1','2','3','4','5','6',
-                          '7','8','9','10','11','12'
-                        ];
-                        if (value
-                                .toInt() <
-                            0 ||
-                            value
-                                    .toInt() >
-                                11) {
-                          return const Text('');
-                        }
-                        return Text(months[
-                            value.toInt()]);
-                      },
-                    ),
-                  ),
-                ),
-                barGroups:
-                    _buildDynamicBarGroups(
-                        model),
-              ),
-            ),
-          ),
+          child: DashboardChart(
+          monthlyUsers: _getChartData(model),
+),
         ),
       ],
     );
   }
+  List<int> _getChartData(DashboardModel? model) {
+  if (model == null) return List.filled(12, 0);
 
-  /// ================= DYNAMIC BAR DATA =================
-  List<BarChartGroupData>
-      _buildDynamicBarGroups(
-          DashboardModel? model) {
-
-    if (model == null) {
-      return List.generate(
-        12,
-        (index) => BarChartGroupData(
-          x: index,
-          barRods: [
-            BarChartRodData(
-              toY: 0,
-              width: 16,
-              borderRadius:
-                  BorderRadius.circular(4),
-            )
-          ],
-        ),
-      );
-    }
-
-    List<int> data;
-
-    switch (_selectedStatistic) {
-      case "users":
-        data = model.monthlyUsers;
-        break;
-      case "recipes":
-        data = model.monthlyRecipes;
-        break;
-      case "blogger":
-        data =
-            model.monthlyBloggerPosts;
-        break;
-      default:
-        data = List.filled(12, 0);
-    }
-
-    return List.generate(12, (index) {
-      return BarChartGroupData(
-        x: index,
-        barRods: [
-          BarChartRodData(
-            toY:
-                data[index].toDouble(),
-            width: 16,
-            borderRadius:
-                BorderRadius.circular(4),
-          ),
-        ],
-      );
-    });
+  switch (_selectedStatistic) {
+    case "users":
+      return model.monthlyUsers;
+    case "recipes":
+      return model.monthlyRecipes;
+    case "blogger":
+      return model.monthlyBloggerPosts;
+    default:
+      return List.filled(12, 0);
   }
+}
 }
