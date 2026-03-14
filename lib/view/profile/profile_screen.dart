@@ -8,8 +8,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'follow_list_screen.dart'; //
-import 'favourite_food_screen.dart'; //
+import 'follow_list_screen.dart'; 
+import 'favourite_food_screen.dart'; 
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -71,13 +71,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title:  Text("logout".tr(), style: TextStyle(fontWeight: FontWeight.bold)),
+        title:  Text("logout".tr(), style: const TextStyle(fontWeight: FontWeight.bold)),
         content:  Text("confirm_logout".tr()),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child:  Text("cancel".tr(), style: TextStyle(color: Colors.grey)),
+            child:  Text("cancel".tr(), style: const TextStyle(color: Colors.grey)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.deepOrange),
@@ -92,12 +92,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 );
               }
             },
-            child:  Text("logout".tr(), style: TextStyle(color: Colors.white)),
+            child:  Text("logout".tr(), style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),
     );
   }
+
 // --- HÀM CHỌN NGÔN NGỮ ---
   void _showLanguageBottomSheet() {
     showModalBottomSheet(
@@ -111,17 +112,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
             mainAxisSize: MainAxisSize.min, // Chiều cao tự động vừa đủ nội dung
             children: [
                Padding(
-                padding: EdgeInsets.all(20),
+                padding: const EdgeInsets.all(20),
                 child: Text(
                   "select_language".tr(), 
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)
                 ),
               ),
               const Divider(height: 1, thickness: 1),
               // Nút Tiếng Việt
               ListTile(
-                leading:  Text("🇻🇳", style: TextStyle(fontSize: 24)),
-                title:  Text("vietnamese".tr(), style: TextStyle(fontSize: 16)),
+                leading:  const Text("🇻🇳", style: TextStyle(fontSize: 24)),
+                title:  Text("vietnamese".tr(), style: const TextStyle(fontSize: 16)),
                 trailing: context.locale.languageCode == 'vi' 
                     ? const Icon(Icons.check_circle, color: Colors.deepOrange) 
                     : null,
@@ -149,6 +150,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
     );
   }
+
   @override
   Widget build(BuildContext context) {
     if (currentUser == null) return const Center(child: Text("Vui lòng đăng nhập"));
@@ -156,7 +158,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5), 
       appBar: AppBar(
-        title:  Text("title_profile".tr(), style: TextStyle(fontWeight: FontWeight.bold)),
+        title:  Text("title_profile".tr(), style: const TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black87,
         elevation: 0,
@@ -280,8 +282,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                        Padding(
-                        padding: EdgeInsets.only(left: 10, bottom: 10),
-                        child: Text("account_management".tr(), style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey)),
+                        padding: const EdgeInsets.only(left: 10, bottom: 10),
+                        child: Text("account_management".tr(), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey)),
                       ),
                       Container(
                         decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15)),
@@ -309,8 +311,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       const SizedBox(height: 25),
 
                        Padding(
-                        padding: EdgeInsets.only(left: 10, bottom: 10),
-                        child: Text("settings".tr(), style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey)),
+                        padding: const EdgeInsets.only(left: 10, bottom: 10),
+                        child: Text("settings".tr(), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey)),
                       ),
                       Container(
                         decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15)),
@@ -327,9 +329,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             _buildDivider(),
                             _buildMenuTile(
                               icon: Icons.language,
-                              title: "language".tr(args: ["Language"]), // Sử dụng .tr() để dịch tiêu đề
+                              title: "language".tr(args: ["Language"]), 
                               trailingText: "Language".tr(),
-                              onTap: _showLanguageBottomSheet, // Mở bảng chọn ngôn ngữ
+                              onTap: _showLanguageBottomSheet, 
+                            ),
+                            _buildDivider(),
+                            // --- THÊM NÚT TRANG THÔNG TIN NHÀ PHÁT TRIỂN ---
+                            _buildMenuTile(
+                              icon: Icons.info_outline,
+                              title: "Thông tin nhà phát triển",
+                              iconColor: Colors.blueAccent,
+                              onTap: () {
+                                Navigator.push(context, MaterialPageRoute(builder: (_) => const DeveloperInfoScreen()));
+                              },
                             ),
                           ],
                         ),
@@ -351,9 +363,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           child:  Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.logout),
-                              SizedBox(width: 8),
-                              Text("logout".tr(), style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                              const Icon(Icons.logout),
+                              const SizedBox(width: 8),
+                              Text("logout".tr(), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                             ],
                           ),
                         ),
@@ -411,5 +423,140 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildDivider() {
     return const Divider(height: 1, thickness: 1, indent: 60, color: Color(0xFFF0F0F0));
+  }
+}
+
+// =========================================================================
+// MÀN HÌNH THÔNG TIN NHÀ PHÁT TRIỂN (THÊM MỚI THEO YÊU CẦU)
+// =========================================================================
+class DeveloperInfoScreen extends StatelessWidget {
+  const DeveloperInfoScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F5F5),
+      appBar: AppBar(
+        title: const Text(
+          "Thông tin ứng dụng", 
+          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)
+        ),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black87,
+        elevation: 0,
+        centerTitle: true,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const SizedBox(height: 20),
+            
+            // Icon hoặc Logo App
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.orange.shade100,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.restaurant_menu, size: 80, color: Colors.deepOrange),
+            ),
+            const SizedBox(height: 30),
+            
+            // Tiêu đề
+            const Text(
+              "Thành viên đóng góp",
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Colors.black87),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              "Đội ngũ phát triển dự án Lập Trình Di Động",
+              style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+            ),
+            const SizedBox(height: 30),
+
+            // Danh sách thành viên
+            _buildDeveloperCard("Trần Bảo Long", Icons.person),
+            const SizedBox(height: 15),
+            _buildDeveloperCard("Vũ Khánh Vân", Icons.person_3), // Dùng icon nữ nếu có
+            
+            const SizedBox(height: 40),
+
+            // Thông tin liên hệ
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(15),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, 5),
+                  )
+                ],
+              ),
+              child: Column(
+                children: [
+                  const Text("Liên hệ hỗ trợ:", style: TextStyle(fontSize: 14, color: Colors.grey)),
+                  const SizedBox(height: 15),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(color: Colors.deepOrange.withOpacity(0.1), shape: BoxShape.circle),
+                        child: const Icon(Icons.email, color: Colors.deepOrange, size: 20),
+                      ),
+                      const SizedBox(width: 15),
+                      const Text(
+                        "tranbaolong5b@gmail.com", 
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Khung vẽ thẻ tên thành viên
+  Widget _buildDeveloperCard(String name, IconData icon) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.08),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          )
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.orange.shade50,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: Colors.deepOrange),
+          ),
+          const SizedBox(width: 20),
+          Text(
+            name, 
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)
+          ),
+        ],
+      ),
+    );
   }
 }
