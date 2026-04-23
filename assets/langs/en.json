@@ -123,6 +123,16 @@
   "community_cooky": "Cooky community",
   "account_deleted": "Account deleted",
   "name": "Name",
-  "bio": "Short bio"
+  "bio": "Short bio",
+  
+  "filters": "Filters",
+  "clear_all": "Clear all",
+  "apply_filters": "Apply Filters",
+  "active_filters": "Active Filters",
+  "search_results": "Search Results",
+  "no_recipes": "No recipes",
+  "no_results_with_filters": "No results matching your filters",
+  "all": "All",
+  "Founder": "Founder"
   
 }

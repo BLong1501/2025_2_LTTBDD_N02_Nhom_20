@@ -1,13 +1,11 @@
 import 'package:btl_ltdd/view/food/meal_plan_detail_screen.dart';
-import 'package:btl_ltdd/view/home/meal_plan_screen.dart';
-import 'package:btl_ltdd/view/profile/profile_screen.dart';
-import 'package:btl_ltdd/view/profile/public_profile.dart';
-import 'package:cloud_firestore/cloud_firestore.dart'; // Cần import để lấy info user
+import 'package:cloud_firestore/cloud_firestore.dart'; 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../models/food_model.dart';
 import '../../services/food_service.dart';
+import '../profile/public_profile.dart'; // Đừng quên import cái này cho _AuthorInfo
 
 class CommunityScreen extends StatefulWidget {
   const CommunityScreen({super.key});
@@ -25,9 +23,9 @@ class _CommunityScreenState extends State<CommunityScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title:  Text(
+        title: Text(
           "community_cooky".tr(),
-          style: TextStyle(color: Colors.deepOrange, fontWeight: FontWeight.bold),
+          style: const TextStyle(color: Colors.deepOrange, fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.white,
         elevation: 0,
@@ -40,16 +38,21 @@ class _CommunityScreenState extends State<CommunityScreen> {
             return const Center(child: CircularProgressIndicator());
           }
           
-          final foods = snapshot.data ?? [];
+          // --- SỬA Ở ĐÂY: LỌC BỎ BÀI CỦA ADMIN ---
+          // Lấy danh sách về, sau đó dùng .where() để loại bỏ bài có isFeatured == true
+          // Hoặc loại bỏ bài có authorId == 'admin_id'
+          final allFoods = snapshot.data ?? [];
+          final foods = allFoods.where((food) => !food.isFeatured && food.authorId != 'admin_id').toList();
+          // ----------------------------------------
 
           if (foods.isEmpty) {
-            return const Center(
+            return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.public_off, size: 60, color: Colors.grey),
-                  SizedBox(height: 10),
-                  Text("Chưa có bài đăng nào.", style: TextStyle(color: Colors.grey)),
+                  const Icon(Icons.public_off, size: 60, color: Colors.grey),
+                  const SizedBox(height: 10),
+                  Text("nothing".tr(), style: const TextStyle(color: Colors.grey)), // Dùng từ điển
                 ],
               ),
             );
@@ -74,7 +77,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 1. HEADER: Thay vì code cứng, ta gọi Widget _AuthorInfo để load dữ liệu thật
+        // 1. HEADER: Widget load thông tin tác giả
         _AuthorInfo(authorId: food.authorId, category: food.category),
 
         // 2. ẢNH MÓN ĂN
@@ -112,7 +115,6 @@ class _CommunityScreenState extends State<CommunityScreen> {
                 },
               ),
               
-              
               const Spacer(),
               InkWell(
                 onTap: () {
@@ -127,11 +129,11 @@ class _CommunityScreenState extends State<CommunityScreen> {
                     color: Colors.black87,
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child:  Row(
+                  child: Row(
                     children: [
-                      Text("show_recipe".tr(), style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
-                      SizedBox(width: 4),
-                      Icon(Icons.bookmark_border, color: Colors.white, size: 16),
+                      Text("show_recipe".tr(), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+                      const SizedBox(width: 4),
+                      const Icon(Icons.bookmark_border, color: Colors.white, size: 16),
                     ],
                   ),
                 ),
@@ -148,7 +150,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
             children: [
               if (food.likedBy.isNotEmpty)
                 Text(
-                  "${food.likedBy.length} " "likes".tr(), // Hiển thị số lượng like
+                  "${food.likedBy.length} ${'favorite'.tr()}", // Hiển thị số lượng like (Từ điển)
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
               const SizedBox(height: 5),
@@ -156,7 +158,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
                 text: TextSpan(
                   style: const TextStyle(color: Colors.black, fontSize: 14),
                   children: [
-                     TextSpan(text: "describe".tr() + ": ", style: TextStyle(fontWeight: FontWeight.bold)),
+                     TextSpan(text: "${'describe'.tr()}: ", style: const TextStyle(fontWeight: FontWeight.bold)),
                     TextSpan(
                       text: food.note.isNotEmpty ? food.note : food.title,
                       style: const TextStyle(height: 1.4),
@@ -211,10 +213,8 @@ class _AuthorInfo extends StatelessWidget {
           avatarUrl = data['avatarUrl'] ?? data['image']; 
         }
 
-        // --- BỌC INKWELL VÀO ĐÂY ĐỂ BẮT SỰ KIỆN CLICK ---
         return InkWell(
           onTap: () {
-            // LUÔN LUÔN CHUYỂN SANG PUBLIC PROFILE DÙ LÀ AI
             Navigator.push(
               context, 
               MaterialPageRoute(builder: (_) => PublicProfileScreen(authorId: authorId))
@@ -242,7 +242,7 @@ class _AuthorInfo extends StatelessWidget {
                       style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                     ),
                     Text(
-                      category.isNotEmpty ? category : "Món ngon",
+                      category.isNotEmpty ? category : "category".tr(),
                       style: TextStyle(color: Colors.grey[600], fontSize: 12),
                     ),
                   ],

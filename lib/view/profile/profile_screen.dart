@@ -48,7 +48,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       await currentUser!.updatePhotoURL(downloadUrl);
       await currentUser!.reload(); 
-
+      
       await _firestore.collection('users').doc(uid).set({
         'avatarUrl': downloadUrl, 
       }, SetOptions(merge: true));
@@ -337,7 +337,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             // --- THÊM NÚT TRANG THÔNG TIN NHÀ PHÁT TRIỂN ---
                             _buildMenuTile(
                               icon: Icons.info_outline,
-                              title: "Thông tin nhà phát triển",
+                              title: "Founder".tr(),
                               iconColor: Colors.blueAccent,
                               onTap: () {
                                 Navigator.push(context, MaterialPageRoute(builder: (_) => const DeveloperInfoScreen()));

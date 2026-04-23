@@ -2,12 +2,14 @@ import 'package:btl_ltdd/view/community/community_screen.dart';
 import 'package:btl_ltdd/view/home/meal_plan_screen.dart';
 import 'package:btl_ltdd/view/profile/profile_screen.dart';
 import 'package:btl_ltdd/view/widgets/blogger_navigator_screen.dart';
+import 'package:btl_ltdd/view/widgets/filter_widget.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../models/food_model.dart'; 
 import '../food/meal_plan_detail_screen.dart';
-
+import '../food/search_results_with_filters_screen.dart';
+import '../../models/filter_model.dart';
 // --- HÀM HỖ TRỢ DÙNG CHUNG: Bỏ dấu tiếng Việt để tìm kiếm thông minh ---
 String removeVietnameseTones(String str) {
   str = str.toLowerCase();
@@ -76,6 +78,7 @@ class DiscoverView extends StatefulWidget {
 class _DiscoverViewState extends State<DiscoverView> {
   String _searchQuery = "";
   final TextEditingController _searchController = TextEditingController();
+  FilterModel _currentFilter = FilterModel();
 
   // Hàm chuyển sang trang Kết quả tìm kiếm
   void _goToSearchResults(String keyword) {
@@ -86,7 +89,12 @@ class _DiscoverViewState extends State<DiscoverView> {
 
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => SearchResultsScreen(keyword: keyword.trim())),
+      MaterialPageRoute(
+        builder: (_) => SearchResultsWithFiltersScreen(
+          keyword: keyword.trim(),
+          initialFilter: _currentFilter,
+        ),
+      ),
     ).then((_) {
       // Khi từ trang tìm kiếm Back về -> Reset lại ô tìm kiếm
       _searchController.clear();
@@ -151,6 +159,37 @@ class _DiscoverViewState extends State<DiscoverView> {
                       ),
                     ),
                   ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                height: 45,
+                decoration: BoxDecoration(
+                  color: _currentFilter.hasActiveFilters() ? Colors.orange : Colors.grey[200],
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                child: IconButton(
+                  icon: Icon(
+                    Icons.filter_list,
+                    color: _currentFilter.hasActiveFilters() ? Colors.white : Colors.black,
+                  ),
+                  onPressed: () {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      builder: (_) {
+                        return FilterBottomSheet(
+                          initialFilter: _currentFilter,
+                          onFilterChanged: (newFilter) {
+                            setState(() {
+                              _currentFilter = newFilter;
+                            });
+                          },
+                        );
+                      },
+                    );
+                  },
                 ),
               ),
             ],
@@ -219,7 +258,10 @@ class _DiscoverViewState extends State<DiscoverView> {
                     if (food.isFeatured || food.isShared) {
                       final titleNoTones = removeVietnameseTones(food.title);
                       final ingredientsNoTones = removeVietnameseTones(food.ingredients.join(" "));
-                      if (titleNoTones.contains(searchKeyword) || ingredientsNoTones.contains(searchKeyword)) {
+                      final tagsNoTones = removeVietnameseTones(food.tags.join(" "));
+                      if (titleNoTones.contains(searchKeyword) ||
+                          ingredientsNoTones.contains(searchKeyword) ||
+                          tagsNoTones.contains(searchKeyword)) {
                         suggestions.add(doc);
                       }
                     }
@@ -313,110 +355,111 @@ class _DiscoverViewState extends State<DiscoverView> {
   }
 }
 
+
 // =======================================================================
-// --- TRANG HIỂN THỊ KẾT QUẢ TÌM KIẾM (TÌM CẢ BÀI ADMIN & CỘNG ĐỒNG) ---
+// --- TRANG HIỂN THỊ KẾT QUẢ TÌM KIẾM CŨ (KHÔNG SỬ DỤNG - GIỮ CHO TƯƠNG THÍCH NGƯỢC) ---
 // =======================================================================
-class SearchResultsScreen extends StatelessWidget {
-  final String keyword;
-
-  const SearchResultsScreen({super.key, required this.keyword});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: Text('Kết quả cho "$keyword"', style: const TextStyle(color: Colors.black87, fontSize: 18, fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
-        elevation: 1,
-      ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance.collection('foods').where('isApproved', isEqualTo: true).snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator(color: Colors.orange));
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) return const Center(child: Text("Chưa có công thức nào."));
-
-          final searchKeyword = removeVietnameseTones(keyword);
-          List<DocumentSnapshot> filteredFoods = [];
-
-          for (var doc in snapshot.data!.docs) {
-            final data = doc.data() as Map<String, dynamic>;
-            final food = FoodModel.fromMap(data, doc.id);
-            
-            // Tìm trong cả bài Admin và bài chia sẻ
-            if (food.isFeatured || food.isShared) {
-              final titleNoTones = removeVietnameseTones(food.title);
-              final ingredientsNoTones = removeVietnameseTones(food.ingredients.join(" "));
-
-              if (titleNoTones.contains(searchKeyword) || ingredientsNoTones.contains(searchKeyword)) {
-                filteredFoods.add(doc);
-              }
-            }
-          }
-
-          if (filteredFoods.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.search_off, size: 80, color: Colors.grey[300]),
-                  const SizedBox(height: 15),
-                  Text("no_results".tr(), style: TextStyle(color: Colors.grey[600], fontSize: 16)),
-                ],
-              ),
-            );
-          }
-
-          return GridView.builder(
-            padding: const EdgeInsets.all(16),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, childAspectRatio: 0.75, crossAxisSpacing: 15, mainAxisSpacing: 20),
-            itemCount: filteredFoods.length,
-            itemBuilder: (context, index) {
-              // Tái sử dụng lại cách vẽ thẻ (card)
-              final doc = filteredFoods[index];
-              final data = doc.data() as Map<String, dynamic>;
-              final food = FoodModel.fromMap(data, doc.id);
-              double averageRating = (data['rating'] ?? 0.0).toDouble();
-
-              return InkWell(
-                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => MealDetailScreen(food: food))),
-                child: Container(
-                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.1), blurRadius: 5, spreadRadius: 2)]),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Stack(
-                          children: [
-                            Container(
-                              width: double.infinity, decoration: BoxDecoration(color: Colors.grey[200], borderRadius: const BorderRadius.vertical(top: Radius.circular(12))),
-                              child: ClipRRect(borderRadius: const BorderRadius.vertical(top: Radius.circular(12)), child: food.imageUrl.isNotEmpty ? Image.network(food.imageUrl, fit: BoxFit.cover, errorBuilder: (_,__,___) => const Center(child: Icon(Icons.broken_image, color: Colors.grey))) : const Center(child: Icon(Icons.fastfood, color: Colors.orange, size: 40))),
-                            ),
-                            if (food.isFeatured) Positioned(top: 10, right: 10, child: Container(padding: const EdgeInsets.all(4), decoration: const BoxDecoration(color: Colors.redAccent, shape: BoxShape.circle), child: const Icon(Icons.star, color: Colors.white, size: 12))),
-                            if (food.difficulty.isNotEmpty) Positioned(top: 10, left: 10, child: Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), decoration: BoxDecoration(color: Colors.orange, borderRadius: BorderRadius.circular(4)), child: Text(food.difficulty, style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)))),
-                          ],
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(10.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text("${food.time} • ⭐ ${averageRating > 0 ? averageRating : "0/5"}", style: TextStyle(color: Colors.grey[600], fontSize: 12)),
-                            const SizedBox(height: 4),
-                            Text(food.title, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.black87, fontSize: 16, fontWeight: FontWeight.bold)),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          );
-        },
-      ),
-    );
-  }
-}
+// class SearchResultsScreen extends StatelessWidget {
+//   final String keyword;
+//
+//   const SearchResultsScreen({super.key, required this.keyword});
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       backgroundColor: Colors.white,
+//       appBar: AppBar(
+//         title: Text('Kết quả cho "$keyword"', style: const TextStyle(color: Colors.black87, fontSize: 18, fontWeight: FontWeight.bold)),
+//         backgroundColor: Colors.white,
+//         foregroundColor: Colors.black87,
+//         elevation: 1,
+//       ),
+//       body: StreamBuilder<QuerySnapshot>(
+//         stream: FirebaseFirestore.instance.collection('foods').where('isApproved', isEqualTo: true).snapshots(),
+//         builder: (context, snapshot) {
+//           if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator(color: Colors.orange));
+//           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) return const Center(child: Text("Chưa có công thức nào."));
+//
+//           final searchKeyword = removeVietnameseTones(keyword);
+//           List<DocumentSnapshot> filteredFoods = [];
+//
+//           for (var doc in snapshot.data!.docs) {
+//             final data = doc.data() as Map<String, dynamic>;
+//             final food = FoodModel.fromMap(data, doc.id);
+//             
+//             // Tìm trong cả bài Admin và bài chia sẻ
+//             if (food.isFeatured || food.isShared) {
+//               final titleNoTones = removeVietnameseTones(food.title);
+//               final ingredientsNoTones = removeVietnameseTones(food.ingredients.join(" "));
+//
+//               if (titleNoTones.contains(searchKeyword) || ingredientsNoTones.contains(searchKeyword)) {
+//                 filteredFoods.add(doc);
+//               }
+//             }
+//           }
+//
+//           if (filteredFoods.isEmpty) {
+//             return Center(
+//               child: Column(
+//                 mainAxisAlignment: MainAxisAlignment.center,
+//                 children: [
+//                   Icon(Icons.search_off, size: 80, color: Colors.grey[300]),
+//                   const SizedBox(height: 15),
+//                   Text("no_results".tr(), style: TextStyle(color: Colors.grey[600], fontSize: 16)),
+//                 ],
+//               ),
+//             );
+//           }
+//
+//           return GridView.builder(
+//             padding: const EdgeInsets.all(16),
+//             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, childAspectRatio: 0.75, crossAxisSpacing: 15, mainAxisSpacing: 20),
+//             itemCount: filteredFoods.length,
+//             itemBuilder: (context, index) {
+//               // Tái sử dụng lại cách vẽ thẻ (card)
+//               final doc = filteredFoods[index];
+//               final data = doc.data() as Map<String, dynamic>;
+//               final food = FoodModel.fromMap(data, doc.id);
+//               double averageRating = (data['rating'] ?? 0.0).toDouble();
+//
+//               return InkWell(
+//                 onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => MealDetailScreen(food: food))),
+//                 child: Container(
+//                   decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), boxShadow: [BoxShadow(color: Colors.grey.withOpacity(0.1), blurRadius: 5, spreadRadius: 2)]),
+//                   child: Column(
+//                     crossAxisAlignment: CrossAxisAlignment.start,
+//                     children: [
+//                       Expanded(
+//                         child: Stack(
+//                           children: [
+//                             Container(
+//                               width: double.infinity, decoration: BoxDecoration(color: Colors.grey[200], borderRadius: const BorderRadius.vertical(top: Radius.circular(12))),
+//                               child: ClipRRect(borderRadius: const BorderRadius.vertical(top: Radius.circular(12)), child: food.imageUrl.isNotEmpty ? Image.network(food.imageUrl, fit: BoxFit.cover, errorBuilder: (_,__,___) => const Center(child: Icon(Icons.broken_image, color: Colors.grey))) : const Center(child: Icon(Icons.fastfood, color: Colors.orange, size: 40))),
+//                             ),
+//                             if (food.isFeatured) Positioned(top: 10, right: 10, child: Container(padding: const EdgeInsets.all(4), decoration: const BoxDecoration(color: Colors.redAccent, shape: BoxShape.circle), child: const Icon(Icons.star, color: Colors.white, size: 12))),
+//                             if (food.difficulty.isNotEmpty) Positioned(top: 10, left: 10, child: Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), decoration: BoxDecoration(color: Colors.orange, borderRadius: BorderRadius.circular(4)), child: Text(food.difficulty, style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)))),
+//                           ],
+//                         ),
+//                       ),
+//                       Padding(
+//                         padding: const EdgeInsets.all(10.0),
+//                         child: Column(
+//                           crossAxisAlignment: CrossAxisAlignment.start,
+//                           children: [
+//                             Text("${food.time} • ⭐ ${averageRating > 0 ? averageRating : "0/5"}", style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+//                             const SizedBox(height: 4),
+//                             Text(food.title, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.black87, fontSize: 16, fontWeight: FontWeight.bold)),
+//                           ],
+//                         ),
+//                       ),
+//                     ],
+//                   ),
+//                 ),
+//               );
+//             },
+//           );
+//         },
+//       ),
+//     );
+//   }
+// }

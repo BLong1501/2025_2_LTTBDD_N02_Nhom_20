@@ -123,7 +123,17 @@
       "community_cooky": "Cộng đồng Cooky",
       "account_deleted": "Tài khoản đã bị xóa",
       "name": "Tên",
-      "bio": "Tiểu sử ngắn (Bio)"
+      "bio": "Tiểu sử ngắn (Bio)",
+      
+      "filters": "Bộ lọc",
+      "clear_all": "Xóa tất cả",
+      "apply_filters": "Áp dụng bộ lọc",
+      "active_filters": "Bộ lọc đang hoạt động",
+      "search_results": "Kết quả tìm kiếm",
+      "no_recipes": "Không có công thức",
+      "no_results_with_filters": "Không có kết quả phù hợp với bộ lọc của bạn",
+      "all": "Tất cả",
+      "Founder": "Người sáng lập"
   
   
   
